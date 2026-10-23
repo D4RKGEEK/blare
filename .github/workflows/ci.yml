@@ -22,7 +22,7 @@ jobs:
         os: [ubuntu-latest]
         python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         include:
-          # The file state backend uses an OS file lock, so it is worth
+          # The file state backend takes an OS file lock, so it is worth
           # exercising on something other than Linux.
           - os: macos-latest
             python: "3.12"
@@ -35,25 +35,28 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+          python-version: ${{ matrix.python }}
 
       - name: Install
-        run: uv pip install --system -e ".[dev,redis]"
+        run: |
+          uv venv
+          uv pip install -e ".[dev,redis]"
 
       - name: Lint
         run: |
-          ruff check .
-          ruff format --check .
+          uv run ruff check .
+          uv run ruff format --check .
 
       - name: Test
-        run: pytest -q
+        run: uv run pytest -q
 
       - name: The quickstart in the README must actually work
         env:
           BLARE_SINKS: console
           BLARE_ENV: ci
         run: |
-          python -m blare
-          python examples/plain_script.py 2>&1 | tee /tmp/out.txt || true
+          uv run python -m blare
+          uv run python examples/plain_script.py 2>&1 | tee /tmp/out.txt || true
           grep -q "ValueError: order" /tmp/out.txt
 
   conformance:

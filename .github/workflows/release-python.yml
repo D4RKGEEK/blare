@@ -20,11 +20,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv pip install --system -e ".[dev]"
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          uv venv
+          uv pip install -e ".[dev]"
       - name: Never release a red build
         run: |
-          ruff check .
-          pytest -q
+          uv run ruff check .
+          uv run pytest -q
       - run: uv build
       - uses: actions/upload-artifact@v4
         with:
