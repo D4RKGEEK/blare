@@ -11,6 +11,21 @@ from blare.integrations.wsgi import BlareWSGIMiddleware
 from helpers import FakeClock, RecordingSink
 
 
+def fastapi_test_client():
+    """FastAPI's TestClient, or a skip.
+
+    blare itself supports Python 3.9, but Starlette's test client and its httpx
+    dependency do not. That is a limitation of a test-only dependency, so it
+    skips rather than failing the port.
+    """
+    pytest.importorskip("fastapi")
+    try:
+        from fastapi.testclient import TestClient
+    except Exception as exc:
+        pytest.skip(f"fastapi.testclient is unavailable on this Python: {exc}")
+    return TestClient
+
+
 def make_client(sink, **overrides):
     overrides.setdefault("state", "memory")
     overrides.setdefault("sinks", ["console"])
@@ -98,8 +113,8 @@ def test_wsgi_captures_and_reraises():
 
 
 def test_fastapi_end_to_end():
+    TestClient = fastapi_test_client()
     fastapi = pytest.importorskip("fastapi")
-    from fastapi.testclient import TestClient
 
     sink = RecordingSink()
     client = make_client(sink)
@@ -128,8 +143,8 @@ def test_fastapi_end_to_end():
 
 
 def test_fastapi_floods_are_grouped():
+    TestClient = fastapi_test_client()
     fastapi = pytest.importorskip("fastapi")
-    from fastapi.testclient import TestClient
 
     sink = RecordingSink()
     client = make_client(sink, dedupe_window=300, max_per_hour=0)
