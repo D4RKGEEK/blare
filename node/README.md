@@ -2,15 +2,20 @@
 
 # blare for Node
 
+> Published as **`blarejs`**: npm's typosquatting filter refuses the bare name
+> `blare` for new packages, as too close to `base`, `brace` and `slate`. It is
+> the same project as `blare` on PyPI, and both pass the same conformance
+> fixtures.
+
 Production failures to Slack, Discord and Teams. One line of setup, no server,
 no spam.
 
 ```bash
-npm install blare
+npm install blarejs
 ```
 
 ```js
-import blare from "blare";
+import blare from "blarejs";
 blare.init();
 ```
 
@@ -26,7 +31,7 @@ broken endpoint is one message rather than eight hundred.
 Check it before you need it:
 
 ```bash
-npx blare --send
+npx blarejs --send
 ```
 
 ## What is captured
@@ -43,20 +48,20 @@ npx blare --send
 
 ```js
 // Express — after your routes, as Express requires
-import { blareErrorHandler } from "blare/express";
+import { blareErrorHandler } from "blarejs/express";
 app.use(blareErrorHandler());
 
 // Fastify
-import { blarePlugin } from "blare/fastify";
+import { blarePlugin } from "blarejs/fastify";
 app.register(blarePlugin);
 
 // NestJS
-import { BlareExceptionFilter } from "blare/nest";
+import { BlareExceptionFilter } from "blarejs/nest";
 app.useGlobalFilters(new BlareExceptionFilter());
 
 // Next.js — in instrumentation.ts
-import blare from "blare";
-export { onRequestError } from "blare/next";
+import blare from "blarejs";
+export { onRequestError } from "blarejs/next";
 export function register() { blare.init(); }
 ```
 
@@ -66,14 +71,14 @@ is a stream your logger already writes to:
 ```js
 // pino — your existing log.error(...) calls become alerts
 import pino from "pino";
-import { blarePinoStream } from "blare/pino";
+import { blarePinoStream } from "blarejs/pino";
 const log = pino({ level: "info" }, pino.multistream([
   { stream: process.stdout },
   { stream: blarePinoStream() },
 ]));
 
 // winston
-import { blareWinstonTransport } from "blare/winston";
+import { blareWinstonTransport } from "blarejs/winston";
 const log = winston.createLogger({
   transports: [new winston.transports.Console(), blareWinstonTransport()],
 });
