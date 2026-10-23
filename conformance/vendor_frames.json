@@ -1,0 +1,37 @@
+{
+  "spec": "1",
+  "section": "5.7",
+  "comment": "Frames are ordered innermost first. expected_index is the frame the port must pick as the application frame.",
+  "cases": [
+    {
+      "id": "first-frame-is-app-code",
+      "frames": ["app/payments.py", "app/routes.py"],
+      "expected_index": 0
+    },
+    {
+      "id": "skips-site-packages",
+      "frames": [
+        "/srv/.venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py",
+        "/srv/.venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py",
+        "/srv/app/payments.py",
+        "/srv/app/routes.py"
+      ],
+      "expected_index": 2
+    },
+    { "id": "skips-node-modules", "frames": ["/app/node_modules/pg/lib/client.js", "/app/src/db.js"], "expected_index": 1 },
+    { "id": "skips-go-module-cache", "frames": ["/go/pkg/mod/github.com/lib/pq@v1.10.9/conn.go", "/app/store/orders.go"], "expected_index": 1 },
+    { "id": "skips-vendor-dir", "frames": ["/app/vendor/guzzle/src/Client.php", "/app/src/Billing.php"], "expected_index": 1 },
+    { "id": "skips-dist-packages", "frames": ["/usr/lib/python3/dist-packages/requests/api.py", "/opt/app/fetch.py"], "expected_index": 1 },
+    { "id": "skips-cargo-registry", "frames": ["/root/.cargo/registry/src/tokio/runtime.rs", "/app/src/main.rs"], "expected_index": 1 },
+    { "id": "skips-blare-itself", "frames": ["/srv/.venv/lib/python3.12/site-packages/blare/client.py", "/srv/app/jobs.py"], "expected_index": 1 },
+    {
+      "id": "all-vendor-falls-back-to-innermost",
+      "frames": [
+        "/srv/.venv/lib/python3.12/site-packages/celery/worker.py",
+        "/srv/.venv/lib/python3.12/site-packages/kombu/transport.py"
+      ],
+      "expected_index": 0
+    },
+    { "id": "no-frames", "frames": [], "expected_index": null }
+  ]
+}

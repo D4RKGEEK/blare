@@ -1,0 +1,18 @@
+{
+  "spec": "1",
+  "section": "3.1",
+  "cases": [
+    { "id": "slack", "url": "https://hooks.slack.com/services/T000/B000/xxxx", "provider": "slack" },
+    { "id": "discord", "url": "https://discord.com/api/webhooks/123/abc", "provider": "discord" },
+    { "id": "discord-legacy-host", "url": "https://discordapp.com/api/webhooks/123/abc", "provider": "discord" },
+    { "id": "discord-canary", "url": "https://canary.discord.com/api/webhooks/123/abc", "provider": "discord" },
+    { "id": "teams-office", "url": "https://acme.webhook.office.com/webhookb2/abc/IncomingWebhook/def", "provider": "teams" },
+    { "id": "teams-workflows", "url": "https://prod-12.westus.logic.azure.com:443/workflows/abc/triggers/manual/paths/invoke", "provider": "teams" },
+    { "id": "unknown-host-is-generic", "url": "https://alerts.internal.acme.dev/hook", "provider": "generic" },
+    { "id": "explicit-prefix-overrides", "url": "teams+https://relay.acme.dev/hook", "provider": "teams" },
+    { "id": "explicit-generic-prefix", "url": "generic+https://hooks.slack.com/services/T/B/x", "provider": "generic" },
+    { "id": "console-pseudo-sink", "url": "console", "provider": "console" },
+    { "id": "unknown-prefix-is-an-error", "url": "carrierpigeon+https://acme.dev/hook", "error": "unknown provider" },
+    { "id": "non-http-is-an-error", "url": "ftp://acme.dev/hook", "error": "unsupported scheme" }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "spec": "1",
+  "section": "5.8",
+  "cases": [
+    {
+      "id": "plain",
+      "in": "connection refused",
+      "out": "connection refused"
+    },
+    {
+      "id": "lowercases",
+      "in": "Connection Refused",
+      "out": "connection refused"
+    },
+    {
+      "id": "trims-and-collapses",
+      "in": "  too   many\t\tretries  ",
+      "out": "too many retries"
+    },
+    {
+      "id": "integer",
+      "in": "User 4821 not found",
+      "out": "user <n> not found"
+    },
+    {
+      "id": "negative-and-decimal",
+      "in": "drift of -12.5 seconds",
+      "out": "drift of <n> seconds"
+    },
+    {
+      "id": "quoted-single",
+      "in": "missing key 'user_id'",
+      "out": "missing key <s>"
+    },
+    {
+      "id": "quoted-double",
+      "in": "missing key \"user_id\"",
+      "out": "missing key <s>"
+    },
+    {
+      "id": "quoted-swallows-path",
+      "in": "User 4821 not found in '/srv/app/users.db' (attempt 3)",
+      "out": "user <n> not found in <s> (attempt <n>)"
+    },
+    {
+      "id": "email",
+      "in": "no account for ada@example.com here",
+      "out": "no account for <email> here"
+    },
+    {
+      "id": "url",
+      "in": "POST https://api.stripe.com/v1/charges failed",
+      "out": "post <url> failed"
+    },
+    {
+      "id": "uuid",
+      "in": "order 3f2504e0-4f89-11d3-9a0c-0305e82c3301 is gone",
+      "out": "order <id> is gone"
+    },
+    {
+      "id": "uuid-uppercase",
+      "in": "order 3F2504E0-4F89-11D3-9A0C-0305E82C3301 is gone",
+      "out": "order <id> is gone"
+    },
+    {
+      "id": "hex-with-letters",
+      "in": "object a1b2c3d4e5 vanished",
+      "out": "object <hash> vanished"
+    },
+    {
+      "id": "hex-prefixed",
+      "in": "fault at 0x7ffee3b0",
+      "out": "fault at <hash>"
+    },
+    {
+      "id": "long-decimal-is-a-number",
+      "in": "row 1234567 missing",
+      "out": "row <n> missing"
+    },
+    {
+      "id": "short-hex-is-not-a-hash",
+      "in": "code abc12 returned",
+      "out": "code abc<n> returned"
+    },
+    {
+      "id": "absolute-path",
+      "in": "cannot read /srv/app/config.yml now",
+      "out": "cannot read <path> now"
+    },
+    {
+      "id": "windows-path",
+      "in": "cannot read C:\\app\\config.yml now",
+      "out": "cannot read <path> now"
+    },
+    {
+      "id": "ipv4",
+      "in": "connection to 10.0.0.5 timed out",
+      "out": "connection to <ip> timed out"
+    },
+    {
+      "id": "ipv4-with-port",
+      "in": "connection to 10.0.0.5:5432 timed out after 30.5s",
+      "out": "connection to <ip>:<n> timed out after <n>s"
+    },
+    {
+      "id": "ipv6-bracketed",
+      "in": "connection to [2001:db8::1] refused",
+      "out": "connection to <ip> refused"
+    },
+    {
+      "id": "placeholders-are-not-rewritten",
+      "in": "value <n> and <s> kept",
+      "out": "value <n> and <s> kept"
+    },
+    {
+      "id": "two-occurrences-collapse-a",
+      "in": "timeout after 30s on attempt 1",
+      "out": "timeout after <n>s on attempt <n>"
+    },
+    {
+      "id": "two-occurrences-collapse-b",
+      "in": "timeout after 90s on attempt 7",
+      "out": "timeout after <n>s on attempt <n>"
+    },
+    {
+      "id": "truncates-to-200",
+      "in": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaTAIL-ONE",
+      "out": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "id": "empty",
+      "in": "",
+      "out": ""
+    }
+  ]
+}

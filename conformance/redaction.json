@@ -1,0 +1,27 @@
+{
+  "spec": "1",
+  "section": "6",
+  "text_cases": [
+    { "id": "bearer", "in": "retry with Authorization: Bearer abc123def456ghi", "out": "retry with Authorization: Bearer [redacted]" },
+    { "id": "jwt", "in": "token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.dBjftJeZ4CVPmB92K27uhbUJU1p1r_wW1gFWFOEjXk rejected", "out": "token [redacted-jwt] rejected" },
+    { "id": "aws-key", "in": "using AKIAIOSFODNN7EXAMPLE for s3", "out": "using [redacted-aws-key] for s3" },
+    { "id": "aws-session-key", "in": "using ASIAIOSFODNN7EXAMPLE for s3", "out": "using [redacted-aws-key] for s3" },
+    { "id": "slack-token", "in": "posting with xoxb-123456789012-abcdefghijkl failed", "out": "posting with [redacted-slack-token] failed" },
+    { "id": "github-token", "in": "clone with ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789 failed", "out": "clone with [redacted-github-token] failed" },
+    { "id": "url-credentials", "in": "cannot reach postgres://admin:s3cr3t@db.internal:5432/app", "out": "cannot reach postgres://[redacted]@db.internal:5432/app" },
+    { "id": "card-passing-luhn", "in": "charge failed for 4242424242424242", "out": "charge failed for [redacted-card]" },
+    { "id": "digits-failing-luhn-are-kept", "in": "charge failed for 4242424242424243", "out": "charge failed for 4242424242424243" },
+    { "id": "private-key-block", "in": "key -----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA\n-----END RSA PRIVATE KEY----- is bad", "out": "key [redacted-private-key] is bad" },
+    { "id": "nothing-to-redact", "in": "connection pool exhausted", "out": "connection pool exhausted" }
+  ],
+  "mapping_cases": [
+    { "id": "obvious-keys", "in": { "password": "hunter2", "user": "ada" }, "out": { "password": "[redacted]", "user": "ada" } },
+    { "id": "case-insensitive", "in": { "PassWord": "hunter2" }, "out": { "PassWord": "[redacted]" } },
+    { "id": "separator-variants", "in": { "api-key": "k", "api_key": "k", "apiKey": "k" }, "out": { "api-key": "[redacted]", "api_key": "[redacted]", "apiKey": "[redacted]" } },
+    { "id": "nested", "in": { "headers": { "authorization": "Bearer x", "accept": "json" } }, "out": { "headers": { "authorization": "[redacted]", "accept": "json" } } },
+    { "id": "inside-lists", "in": { "items": [ { "token": "t" }, { "name": "ok" } ] }, "out": { "items": [ { "token": "[redacted]" }, { "name": "ok" } ] } },
+    { "id": "values-still-pattern-scanned", "in": { "note": "use AKIAIOSFODNN7EXAMPLE" }, "out": { "note": "use [redacted-aws-key]" } },
+    { "id": "partial-key-names-are-not-matched", "in": { "tokenizer": "bpe", "passwordless": true }, "out": { "tokenizer": "bpe", "passwordless": true } },
+    { "id": "non-string-values-under-secret-keys", "in": { "secret": 12345 }, "out": { "secret": "[redacted]" } }
+  ]
+}

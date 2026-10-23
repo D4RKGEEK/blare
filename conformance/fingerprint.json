@@ -1,0 +1,111 @@
+{
+  "spec": "1",
+  "section": "5.6",
+  "comment": "canonical = kind US type US location US normalize(message); fingerprint = sha256(canonical) hex, first 16 characters. US is U+001F.",
+  "cases": [
+    {
+      "id": "exception-basic",
+      "kind": "exception",
+      "type": "ValueError",
+      "location": "app/pay.py:charge:42",
+      "message": "invalid literal for int()",
+      "fingerprint": "0edf9a6f7b946b29"
+    },
+    {
+      "id": "exception-qualified-type",
+      "kind": "exception",
+      "type": "sqlalchemy.exc.OperationalError",
+      "location": "app/db.py:connect:17",
+      "message": "connection pool exhausted",
+      "fingerprint": "ffa3c564badbd2f8"
+    },
+    {
+      "id": "varying-number-groups-together-a",
+      "kind": "exception",
+      "type": "KeyError",
+      "location": "app/users.py:lookup:88",
+      "message": "User 4821 not found",
+      "fingerprint": "b0a5839f239ce91c"
+    },
+    {
+      "id": "varying-number-groups-together-b",
+      "kind": "exception",
+      "type": "KeyError",
+      "location": "app/users.py:lookup:88",
+      "message": "User 9173 not found",
+      "fingerprint": "b0a5839f239ce91c"
+    },
+    {
+      "id": "different-line-is-a-different-bug",
+      "kind": "exception",
+      "type": "KeyError",
+      "location": "app/users.py:lookup:89",
+      "message": "User 4821 not found",
+      "fingerprint": "fb1be665b550cfb3"
+    },
+    {
+      "id": "different-type-is-a-different-bug",
+      "kind": "exception",
+      "type": "IndexError",
+      "location": "app/users.py:lookup:88",
+      "message": "User 4821 not found",
+      "fingerprint": "f1066b2c7114540d"
+    },
+    {
+      "id": "log-kind",
+      "kind": "log",
+      "type": "app.payments",
+      "location": "app/payments.py:charge:142",
+      "message": "payment failed",
+      "fingerprint": "45926823db6b567b"
+    },
+    {
+      "id": "kind-changes-the-fingerprint",
+      "kind": "exception",
+      "type": "app.payments",
+      "location": "app/payments.py:charge:142",
+      "message": "payment failed",
+      "fingerprint": "c9a50e8e1292d322"
+    },
+    {
+      "id": "no-location",
+      "kind": "log",
+      "type": "app.worker",
+      "location": "",
+      "message": "queue is backed up",
+      "fingerprint": "d1f980da90e21e50"
+    },
+    {
+      "id": "empty-message",
+      "kind": "exception",
+      "type": "RuntimeError",
+      "location": "app/main.py:boot:1",
+      "message": "",
+      "fingerprint": "dab69e6b6aa79e01"
+    },
+    {
+      "id": "quoted-value-collapses",
+      "kind": "exception",
+      "type": "KeyError",
+      "location": "app/cfg.py:read:9",
+      "message": "missing key 'database_url'",
+      "fingerprint": "1b4d73b888f8ef76"
+    },
+    {
+      "id": "uuid-collapses",
+      "kind": "exception",
+      "type": "LookupError",
+      "location": "app/orders.py:get:31",
+      "message": "order 3f2504e0-4f89-11d3-9a0c-0305e82c3301 is gone",
+      "fingerprint": "18803254fb23a776"
+    },
+    {
+      "id": "unicode-message",
+      "kind": "exception",
+      "type": "ValueError",
+      "location": "app/i18n.py:parse:5",
+      "message": "ungültige Eingabe № 7",
+      "fingerprint": "1ad9d0581f51bd16"
+    }
+  ]
+}

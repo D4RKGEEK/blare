@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node (for the upcoming port)
+node_modules/
+*.tsbuildinfo
+
+# Go
+*.test
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Blare's own state file, if a local run drops one here
+blare-*.json
+blare-*.json.lock
+
+# taste-skill working directory
+.taste-skill/

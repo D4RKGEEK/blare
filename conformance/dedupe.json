@@ -1,0 +1,97 @@
+{
+  "spec": "1",
+  "section": "5.1, 5.2",
+  "comment": "Each case replays events against a fresh state store. t is seconds from the start. The port must produce exactly the listed sends, in order.",
+  "cases": [
+    {
+      "id": "first-event-always-sends",
+      "config": { "dedupe_window": 300, "max_per_hour": 0 },
+      "events": [ { "t": 0, "fp": "aaaa" } ],
+      "sends": [ { "t": 0, "fp": "aaaa", "state": "new", "since_last_alert": 1, "total": 1 } ]
+    },
+    {
+      "id": "same-error-inside-window-is-suppressed",
+      "config": { "dedupe_window": 300, "max_per_hour": 0 },
+      "events": [ { "t": 0, "fp": "aaaa" }, { "t": 10, "fp": "aaaa" }, { "t": 299, "fp": "aaaa" } ],
+      "sends": [ { "t": 0, "fp": "aaaa", "state": "new", "since_last_alert": 1, "total": 1 } ]
+    },
+    {
+      "id": "window-expiry-carries-the-suppressed-count",
+      "config": { "dedupe_window": 300, "max_per_hour": 0 },
+      "events": [
+        { "t": 0, "fp": "aaaa" }, { "t": 10, "fp": "aaaa" }, { "t": 20, "fp": "aaaa" }, { "t": 300, "fp": "aaaa" }
+      ],
+      "sends": [
+        { "t": 0, "fp": "aaaa", "state": "new", "since_last_alert": 1, "total": 1 },
+        { "t": 300, "fp": "aaaa", "state": "recurring", "since_last_alert": 3, "total": 4 }
+      ]
+    },
+    {
+      "id": "different-fingerprints-are-independent",
+      "config": { "dedupe_window": 300, "max_per_hour": 0 },
+      "events": [ { "t": 0, "fp": "aaaa" }, { "t": 1, "fp": "bbbb" }, { "t": 2, "fp": "aaaa" } ],
+      "sends": [
+        { "t": 0, "fp": "aaaa", "state": "new", "since_last_alert": 1, "total": 1 },
+        { "t": 1, "fp": "bbbb", "state": "new", "since_last_alert": 1, "total": 1 }
+      ]
+    },
+    {
+      "id": "ignored-events-are-dropped-and-not-counted",
+      "config": { "dedupe_window": 300, "max_per_hour": 0, "ignore": ["KeyboardInterrupt"] },
+      "events": [
+        { "t": 0, "fp": "aaaa", "type": "KeyboardInterrupt" },
+        { "t": 1, "fp": "aaaa", "type": "KeyboardInterrupt" },
+        { "t": 2, "fp": "bbbb", "type": "ValueError" }
+      ],
+      "sends": [ { "t": 2, "fp": "bbbb", "state": "new", "since_last_alert": 1, "total": 1 } ]
+    },
+    {
+      "id": "ignore-glob-matches-type",
+      "config": { "dedupe_window": 300, "max_per_hour": 0, "ignore": ["*.DoesNotExist"] },
+      "events": [ { "t": 0, "fp": "aaaa", "type": "app.models.User.DoesNotExist" } ],
+      "sends": []
+    },
+    {
+      "id": "global-cap-suppresses-and-then-reports",
+      "config": { "dedupe_window": 0, "max_per_hour": 2 },
+      "events": [
+        { "t": 0, "fp": "a" }, { "t": 1, "fp": "b" }, { "t": 2, "fp": "c" }, { "t": 3, "fp": "d" }, { "t": 1800, "fp": "e" }
+      ],
+      "sends": [
+        { "t": 0, "fp": "a", "rate_limited": 0 },
+        { "t": 1, "fp": "b", "rate_limited": 0 },
+        { "t": 1800, "fp": "e", "rate_limited": 2 }
+      ]
+    },
+    {
+      "id": "cap-of-zero-means-no-cap",
+      "config": { "dedupe_window": 0, "max_per_hour": 0 },
+      "events": [ { "t": 0, "fp": "a" }, { "t": 1, "fp": "b" }, { "t": 2, "fp": "c" } ],
+      "sends": [
+        { "t": 0, "fp": "a", "rate_limited": 0 },
+        { "t": 1, "fp": "b", "rate_limited": 0 },
+        { "t": 2, "fp": "c", "rate_limited": 0 }
+      ]
+    },
+    {
+      "id": "recovery-notice-then-the-problem-returns-as-new",
+      "config": { "dedupe_window": 300, "max_per_hour": 0, "resolve_after": 3600 },
+      "events": [ { "t": 0, "fp": "aaaa" }, { "t": 4000, "fp": "bbbb" }, { "t": 4001, "fp": "aaaa" } ],
+      "sends": [
+        { "t": 0, "fp": "aaaa", "state": "new", "since_last_alert": 1, "total": 1 },
+        { "t": 4000, "fp": "aaaa", "state": "resolved" },
+        { "t": 4000, "fp": "bbbb", "state": "new", "since_last_alert": 1, "total": 1 },
+        { "t": 4001, "fp": "aaaa", "state": "new", "since_last_alert": 1, "total": 1 }
+      ]
+    },
+    {
+      "id": "resolve-disabled-by-default",
+      "config": { "dedupe_window": 300, "max_per_hour": 0, "resolve_after": 0 },
+      "events": [ { "t": 0, "fp": "aaaa" }, { "t": 99999, "fp": "aaaa" } ],
+      "sends": [
+        { "t": 0, "fp": "aaaa", "state": "new", "since_last_alert": 1, "total": 1 },
+        { "t": 99999, "fp": "aaaa", "state": "recurring", "since_last_alert": 1, "total": 2 }
+      ]
+    }
+  ]
+}
