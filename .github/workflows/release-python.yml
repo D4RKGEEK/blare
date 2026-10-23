@@ -1,0 +1,45 @@
+name: Release (Python)
+
+# Publishes to PyPI via Trusted Publishing, so no API token is stored anywhere.
+# Set this up once at https://pypi.org/manage/account/publishing/ with:
+#   owner D4RKGEEK · repo blare · workflow release-python.yml · environment pypi
+on:
+  push:
+    tags: ["python-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv pip install --system -e ".[dev]"
+      - name: Never release a red build
+        run: |
+          ruff check .
+          pytest -q
+      - run: uv build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: python/dist
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

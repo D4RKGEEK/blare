@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: python ${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        include:
+          # The file state backend uses an OS file lock, so it is worth
+          # exercising on something other than Linux.
+          - os: macos-latest
+            python: "3.12"
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv pip install --system -e ".[dev,redis]"
+
+      - name: Lint
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Test
+        run: pytest -q
+
+      - name: The quickstart in the README must actually work
+        env:
+          BLARE_SINKS: console
+          BLARE_ENV: ci
+        run: |
+          python -m blare
+          python examples/plain_script.py 2>&1 | tee /tmp/out.txt || true
+          grep -q "ValueError: order" /tmp/out.txt
+
+  conformance:
+    name: fixtures are valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every fixture parses and is non-empty
+        run: |
+          python - <<'EOF'
+          import json, pathlib, sys
+          expected = {
+              "normalize.json", "fingerprint.json", "vendor_frames.json",
+              "dedupe.json", "redaction.json", "sink_detection.json",
+          }
+          found = {p.name for p in pathlib.Path("conformance").glob("*.json")}
+          missing = expected - found
+          if missing:
+              sys.exit(f"missing fixtures: {sorted(missing)}")
+          for path in sorted(pathlib.Path("conformance").glob("*.json")):
+              data = json.loads(path.read_text())
+              assert data.get("spec") == "1", f"{path.name}: spec version"
+              cases = data.get("cases") or data.get("text_cases")
+              assert cases, f"{path.name}: no cases"
+              print(f"{path.name}: ok")
+          EOF
