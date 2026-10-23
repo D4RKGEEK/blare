@@ -71,7 +71,7 @@
     }
   },
   "bin": {
-    "blare": "./dist/esm/cli.js"
+    "blare": "dist/esm/cli.js"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
