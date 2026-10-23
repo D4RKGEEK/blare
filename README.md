@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📣 blare
+<img src="https://raw.githubusercontent.com/D4RKGEEK/blare/main/docs/assets/blare-logo.png" alt="blare" width="280">
 
 **Production failures, in the channel you already watch.**
 

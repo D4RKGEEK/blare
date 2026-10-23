@@ -1,4 +1,6 @@
-# blare (Python)
+<img src="https://raw.githubusercontent.com/D4RKGEEK/blare/main/docs/assets/blare-logo.png" alt="blare" width="240">
+
+# blare for Python
 
 Production failures to Slack, Discord and Teams. One line of setup, no server,
 no spam.
