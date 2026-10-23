@@ -2,7 +2,7 @@
 
 # blare for Node
 
-> Published as **`@d4rkgeek/blare`**. npm's typosquatting filter refuses the
+> Published as **`@geekvb/blare`**. npm's typosquatting filter refuses the
 > unscoped name `blare` (too close to `base`, `brace`, `slate`) and `blarejs`
 > (too close to `blakejs`), and the `@blare` scope belongs to someone else.
 > It is the same project as `blare` on PyPI, and both pass the same
@@ -12,11 +12,11 @@ Production failures to Slack, Discord and Teams. One line of setup, no server,
 no spam.
 
 ```bash
-npm install @d4rkgeek/blare
+npm install @geekvb/blare
 ```
 
 ```js
-import blare from "@d4rkgeek/blare";
+import blare from "@geekvb/blare";
 blare.init();
 ```
 
@@ -32,7 +32,7 @@ broken endpoint is one message rather than eight hundred.
 Check it before you need it:
 
 ```bash
-npx @d4rkgeek/blare --send
+npx @geekvb/blare --send
 ```
 
 ## What is captured
@@ -49,20 +49,20 @@ npx @d4rkgeek/blare --send
 
 ```js
 // Express — after your routes, as Express requires
-import { blareErrorHandler } from "@d4rkgeek/blare/express";
+import { blareErrorHandler } from "@geekvb/blare/express";
 app.use(blareErrorHandler());
 
 // Fastify
-import { blarePlugin } from "@d4rkgeek/blare/fastify";
+import { blarePlugin } from "@geekvb/blare/fastify";
 app.register(blarePlugin);
 
 // NestJS
-import { BlareExceptionFilter } from "@d4rkgeek/blare/nest";
+import { BlareExceptionFilter } from "@geekvb/blare/nest";
 app.useGlobalFilters(new BlareExceptionFilter());
 
 // Next.js — in instrumentation.ts
-import blare from "@d4rkgeek/blare";
-export { onRequestError } from "@d4rkgeek/blare/next";
+import blare from "@geekvb/blare";
+export { onRequestError } from "@geekvb/blare/next";
 export function register() { blare.init(); }
 ```
 
@@ -72,14 +72,14 @@ is a stream your logger already writes to:
 ```js
 // pino — your existing log.error(...) calls become alerts
 import pino from "pino";
-import { blarePinoStream } from "@d4rkgeek/blare/pino";
+import { blarePinoStream } from "@geekvb/blare/pino";
 const log = pino({ level: "info" }, pino.multistream([
   { stream: process.stdout },
   { stream: blarePinoStream() },
 ]));
 
 // winston
-import { blareWinstonTransport } from "@d4rkgeek/blare/winston";
+import { blareWinstonTransport } from "@geekvb/blare/winston";
 const log = winston.createLogger({
   transports: [new winston.transports.Console(), blareWinstonTransport()],
 });

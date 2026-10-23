@@ -1,5 +1,5 @@
 {
-  "name": "@d4rkgeek/blare",
+  "name": "@geekvb/blare",
   "version": "0.1.0",
   "description": "Production failures to Slack, Discord and Teams. One line of setup, no server, no spam. The Node port of blare.",
   "keywords": [
