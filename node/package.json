@@ -1,5 +1,5 @@
 {
-  "name": "blarejs",
+  "name": "blare-node",
   "version": "0.1.0",
   "description": "Production failures to Slack, Discord and Teams. One line of setup, no server, no spam. The Node port of blare.",
   "keywords": [
@@ -72,7 +72,7 @@
   },
   "bin": {
     "blare": "dist/esm/cli.js",
-    "blarejs": "dist/esm/cli.js"
+    "blare-node": "dist/esm/cli.js"
   },
   "scripts": {
     "build": "node scripts/build.mjs",

@@ -9,7 +9,7 @@ eight hundred identical messages.
 
 [![CI](https://github.com/D4RKGEEK/blare/actions/workflows/ci.yml/badge.svg)](https://github.com/D4RKGEEK/blare/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/blare?color=306998&label=pypi)](https://pypi.org/project/blare/)
-[![npm](https://img.shields.io/npm/v/blarejs?color=cb3837&label=npm)](https://www.npmjs.com/package/blarejs)
+[![npm](https://img.shields.io/npm/v/blare-node?color=cb3837&label=npm)](https://www.npmjs.com/package/blare-node)
 [![Spec](https://img.shields.io/badge/spec-v1-black)](SPEC.md)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
@@ -68,7 +68,7 @@ out of it.
 
 ```bash
 pip install blare          # Python
-npm install blarejs     # Node / TypeScript
+npm install blare-node     # Node / TypeScript
 ```
 
 ```python
@@ -77,7 +77,7 @@ blare.init()
 ```
 
 ```js
-import blare from "blarejs";
+import blare from "blare-node";
 blare.init();
 ```
 
