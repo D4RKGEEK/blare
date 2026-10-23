@@ -1,0 +1,86 @@
+{
+  "name": "blare",
+  "version": "0.1.0",
+  "description": "Production failures to Slack, Discord and Teams. One line of setup, no server, no spam.",
+  "keywords": [
+    "alerting",
+    "slack",
+    "discord",
+    "teams",
+    "errors",
+    "monitoring",
+    "notifications",
+    "logging",
+    "webhook",
+    "observability",
+    "express",
+    "fastify",
+    "nestjs"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://d4rkgeek.github.io/blare/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/D4RKGEEK/blare.git",
+    "directory": "node"
+  },
+  "bugs": "https://github.com/D4RKGEEK/blare/issues",
+  "type": "module",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./express": {
+      "types": "./dist/esm/integrations/express.d.ts",
+      "import": "./dist/esm/integrations/express.js",
+      "require": "./dist/cjs/integrations/express.js"
+    },
+    "./fastify": {
+      "types": "./dist/esm/integrations/fastify.d.ts",
+      "import": "./dist/esm/integrations/fastify.js",
+      "require": "./dist/cjs/integrations/fastify.js"
+    },
+    "./nest": {
+      "types": "./dist/esm/integrations/nest.d.ts",
+      "import": "./dist/esm/integrations/nest.js",
+      "require": "./dist/cjs/integrations/nest.js"
+    },
+    "./next": {
+      "types": "./dist/esm/integrations/next.d.ts",
+      "import": "./dist/esm/integrations/next.js",
+      "require": "./dist/cjs/integrations/next.js"
+    },
+    "./pino": {
+      "types": "./dist/esm/integrations/pino.d.ts",
+      "import": "./dist/esm/integrations/pino.js",
+      "require": "./dist/cjs/integrations/pino.js"
+    },
+    "./winston": {
+      "types": "./dist/esm/integrations/winston.d.ts",
+      "import": "./dist/esm/integrations/winston.js",
+      "require": "./dist/cjs/integrations/winston.js"
+    }
+  },
+  "bin": {
+    "blare": "./dist/esm/cli.js"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "npm run build && node --test \"test/*.test.js\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "npm run build && node --test \"test/*.test.js\""
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  }
+}

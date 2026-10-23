@@ -59,6 +59,48 @@ jobs:
           uv run python examples/plain_script.py 2>&1 | tee /tmp/out.txt || true
           grep -q "ValueError: order" /tmp/out.txt
 
+  node:
+    name: node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: ["18.x", "20.x", "22.x", "24.x"]
+        include:
+          # The file state backend takes a file lock, so it is worth
+          # exercising on something other than Linux.
+          - os: macos-latest
+            node: "22.x"
+    defaults:
+      run:
+        working-directory: node
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: node/package-lock.json
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build and test
+        run: npm test
+
+      - name: The quickstart in the README must actually work
+        env:
+          BLARE_SINKS: console
+          BLARE_ENV: ci
+        run: |
+          node dist/esm/cli.js
+          node examples/plain-script.mjs 2>&1 | tee /tmp/out.txt || true
+          grep -q "order 4821 has no payment method" /tmp/out.txt
+
   conformance:
     name: fixtures are valid
     runs-on: ubuntu-latest

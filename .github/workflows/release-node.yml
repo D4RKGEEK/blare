@@ -1,0 +1,39 @@
+name: Release (Node)
+
+# Publishes to npm with provenance, so the registry records which workflow and
+# which commit produced the tarball.
+# Needs an automation token in the repository secret NPM_TOKEN.
+on:
+  push:
+    tags: ["node-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: node
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+          cache-dependency-path: node/package-lock.json
+      - run: npm ci
+      - name: Never release a red build
+        run: |
+          npm run typecheck
+          npm test
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

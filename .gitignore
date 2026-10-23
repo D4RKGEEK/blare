@@ -11,9 +11,11 @@ dist/
 .coverage
 htmlcov/
 
-# Node (for the upcoming port)
+# Node
 node_modules/
 *.tsbuildinfo
+node/dist/
+*.tgz
 
 # Go
 *.test

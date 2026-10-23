@@ -8,7 +8,8 @@ One line of setup. No server, no dashboard, no account — and no 3 a.m. flood o
 eight hundred identical messages.
 
 [![CI](https://github.com/D4RKGEEK/blare/actions/workflows/ci.yml/badge.svg)](https://github.com/D4RKGEEK/blare/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/blare?color=306998)](https://pypi.org/project/blare/)
+[![PyPI](https://img.shields.io/pypi/v/blare?color=306998&label=pypi)](https://pypi.org/project/blare/)
+[![npm](https://img.shields.io/npm/v/blare?color=cb3837&label=npm)](https://www.npmjs.com/package/blare)
 [![Spec](https://img.shields.io/badge/spec-v1-black)](SPEC.md)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
@@ -66,12 +67,18 @@ out of it.
 ## Quickstart
 
 ```bash
-pip install blare
+pip install blare          # Python
+npm install blare          # Node / TypeScript
 ```
 
 ```python
 import blare
 blare.init()
+```
+
+```js
+import blare from "blare";
+blare.init();
 ```
 
 ```bash
@@ -91,18 +98,18 @@ there is no URL scheme to learn. Several, comma separated, all get a copy.
 
 ## What it captures
 
-Everything in the first group needs **no code changes at all**:
+| Python | Node / TypeScript |
+| --- | --- |
+| `logging` handler on the root logger | pino stream, winston transport |
+| `sys.excepthook`, thread hook | `uncaughtException`, `unhandledRejection` |
+| FastAPI, Starlette, Litestar, Quart | Express |
+| Flask | Fastify |
+| Django | NestJS |
+| Celery | Next.js (server side) |
+| Any WSGI app | — |
 
-| Layer | Hook | Python |
-| --- | --- | --- |
-| Standard logging | handler on the root logger | ✅ |
-| Unhandled exceptions | `sys.excepthook`, thread hook | ✅ |
-| **Framework errors** | | |
-| FastAPI / Starlette / Litestar / Quart | ASGI middleware | ✅ |
-| Flask | `got_request_exception` | ✅ |
-| Django | `got_request_exception` | ✅ |
-| Celery | `task_failure` | ✅ |
-| Any WSGI app | WSGI middleware | ✅ |
+Log and crash capture need **no code changes at all**; a framework needs one
+line.
 
 ## Where it sends
 
@@ -129,8 +136,8 @@ failure under the same fingerprint.
 | Language | Status | Frameworks |
 | --- | --- | --- |
 | **Python** | ✅ **v0.1** | logging, FastAPI, Flask, Django, Celery, WSGI |
+| **Node / TypeScript** | ✅ **v0.1** | pino, winston, Express, Fastify, NestJS, Next.js |
 | **Go** | 🔜 next | `log/slog`, `net/http`, Gin, Echo, Fiber |
-| **Node / TypeScript** | 📋 planned | Express, NestJS, Fastify, Next.js (server) |
 | **Java / Kotlin** | 📋 planned | SLF4J/Logback, Spring Boot |
 | **Ruby** | 📋 planned | Rails, Sidekiq |
 | **PHP** | 📋 planned | Laravel, Symfony |
@@ -220,9 +227,10 @@ Being clear about this up front, because the gaps are deliberate:
 ## Project layout
 
 ```
-SPEC.md          the normative behaviour spec — the source of truth
+SPEC.md          the normative behaviour spec, the source of truth
 conformance/     shared JSON fixtures every language port must pass
 python/          the Python implementation (reference port)
+node/            the TypeScript implementation
 docs/            the documentation site
 ```
 
