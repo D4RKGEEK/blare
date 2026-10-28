@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://d4rkgeek.github.io/blare/sitemap.xml
