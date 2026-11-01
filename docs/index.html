@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>blare — Send Python &amp; Node.js Errors to Slack, Discord and Teams</title>
-<meta name="description" content="Open-source error alerting for Python and Node.js. Send production errors to Slack, Discord or Teams in two lines. No server, no dashboard — and one message per problem instead of 847.">
+<meta name="description" content="Open-source error alerting for Python and Node.js. Send production errors to Slack, Discord or Teams in two lines. No server, no dashboard, and one message per problem instead of 847.">
 <link rel="canonical" href="https://d4rkgeek.github.io/blare/">
 <meta name="author" content="blare contributors">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -135,9 +135,8 @@ nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);
   align-items:center;gap:28px}
 .brand{display:flex;align-items:center;gap:11px;font-family:Poppins,sans-serif;
   font-weight:700;font-size:21px;letter-spacing:-.04em}
-.mark{width:34px;height:34px;border-radius:9px;background:var(--grad);display:flex;
-  align-items:flex-end;justify-content:center;gap:3px;padding:7px 5px;flex:0 0 auto}
-.mark i{display:block;width:3.6px;border-radius:2px;background:#fff}
+.mark{width:34px;height:34px;border-radius:9px;background:var(--grad);
+  display:block;overflow:hidden;flex:0 0 auto}
 .nav-links{display:flex;gap:24px;margin-left:auto;align-items:center;
   font-size:15px;font-weight:500;color:var(--ink-2)}
 .nav-links a:hover{color:var(--ink)}
@@ -159,7 +158,8 @@ nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);
   color:var(--ink-2);line-height:1.6}
 .actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:36px}
 .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 26px;border-radius:12px;
-  font-weight:600;font-size:16px;border:1px solid transparent;transition:all .2s;cursor:pointer}
+  font-weight:600;font-size:16px;border:1px solid transparent;cursor:pointer;
+  transition:opacity .2s,background .2s,transform .2s,color .2s}
 .btn-1{background:var(--grad);color:#fff}
 .btn-1:hover{opacity:.88;transform:translateY(-1px)}
 .btn-2{background:rgba(255,255,255,.06);border-color:var(--line);color:var(--ink)}
@@ -170,7 +170,7 @@ nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);
 .tabs{display:flex;gap:6px;justify-content:center;margin-bottom:14px}
 .tab{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--ink-3);
   padding:8px 18px;border-radius:9px;font:inherit;font-size:14px;font-weight:600;
-  cursor:pointer;transition:all .18s}
+  cursor:pointer;transition:background .18s,border-color .18s,color .18s}
 .tab[aria-selected="true"]{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.5);
   color:var(--ink)}
 .codebox{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
@@ -308,7 +308,7 @@ footer{border-top:1px solid var(--line-2);padding:52px 0 40px;margin-top:40px}
 <nav>
   <div class="nav-in">
     <a class="brand" href="/blare/">
-      <span class="mark" aria-hidden="true"><i style="height:52%"></i><i style="height:100%"></i><i style="height:40%"></i><i style="height:74%"></i><i style="height:58%"></i></span>
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><circle cx="21" cy="32" r="6" fill="#fff"/><path d="M33 20.5a17 17 0 0 1 0 23" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="M45 12a29 29 0 0 1 0 40" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round" opacity=".45"/></svg></span>
       blare
     </a>
     <div class="nav-links">
@@ -332,10 +332,10 @@ footer{border-top:1px solid var(--line-2);padding:52px 0 40px;margin-top:40px}
     <h1>Send production errors to <span class="accent">Slack, Discord and Teams</span></h1>
     <p class="lead">
       Two lines of setup. No server, no database, no dashboard. And when the same
-      failure fires 847 times, your channel gets <strong>one message</strong> — not 847.
+      failure fires 847 times, your channel gets <strong>one message</strong>, not 847.
     </p>
     <div class="actions">
-      <a class="btn btn-1" href="#install">Get started</a>
+      <a class="btn btn-1" href="#install">Install in two lines</a>
       <a class="btn btn-2" href="#demo">See it group 847 errors</a>
     </div>
 
@@ -588,7 +588,7 @@ export { onRequestError } from "@geekvb/blare/next";</code></pre>
     <div class="foot">
       <div>
         <a class="brand" href="/blare/" style="margin-bottom:14px">
-          <span class="mark" aria-hidden="true"><i style="height:52%"></i><i style="height:100%"></i><i style="height:40%"></i><i style="height:74%"></i><i style="height:58%"></i></span>
+          <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><circle cx="21" cy="32" r="6" fill="#fff"/><path d="M33 20.5a17 17 0 0 1 0 23" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="M45 12a29 29 0 0 1 0 40" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round" opacity=".45"/></svg></span>
           blare
         </a>
         <p style="color:var(--ink-3);font-size:15px;max-width:34ch">
