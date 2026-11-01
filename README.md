@@ -19,6 +19,8 @@ and no dashboard. One message per problem, not one per crash.
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![Python versions](https://img.shields.io/pypi/pyversions/blare?color=306998)](https://pypi.org/project/blare/)
 
+<img src="https://raw.githubusercontent.com/D4RKGEEK/blare/main/docs/assets/producthunt/blare-demo.gif" alt="500 identical errors fired; blare delivers one alert and suppresses 499" width="760">
+
 **[Live demo](https://d4rkgeek.github.io/blare/)** ·
 [Quickstart](#quickstart) ·
 [What it captures](#what-it-captures) ·

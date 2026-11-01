@@ -74,6 +74,19 @@ Upload in this order — the first is the feed thumbnail.
 Image 2 is the one that sells it. If Product Hunt only shows two, make sure
 that one is second.
 
+## Video
+
+`docs/assets/producthunt/blare-demo.mp4` — 25 seconds, 1280x720, silent, 550 KB.
+Title, the code being typed, 500 errors firing, then the result: 1 delivered,
+499 suppressed. Those numbers are from a real run against the published
+package, not a mock-up.
+
+`blare-demo.gif` (1.2 MB) is the same thing for places that will not take a
+video: the README, Reddit, Twitter.
+
+Product Hunt prefers a YouTube link over an upload. Upload the MP4 to YouTube
+as unlisted and paste the link in the video field.
+
 ---
 
 ## Maker's first comment
@@ -83,53 +96,42 @@ more than the description — it is what people actually read.
 
 ---
 
-At work, every production failure went to Slack. I had wired our logging so
-anything at ERROR level fired a webhook, and for a while it was great.
+Every production error at my old job went to Slack. Worked fine until a
+connection pool died and the same exception fired a few hundred times in five
+minutes. One Slack message each.
 
-Then a database connection pool ran dry and the same exception fired a few
-hundred times in five minutes. Each one its own Slack message.
+Someone muted the channel. That's worse than having no alerts, because now you
+think you're covered.
 
-Someone muted the channel. A muted alerting channel is worse than no channel,
-because now you think you're covered.
-
-I fixed it the way everyone does — some throttling, a counter, state in Redis.
-Then I changed jobs and wrote roughly the same code again. So I made it a
-library.
-
-**What it is:** two lines, and your existing `logger.error` calls plus
-unhandled crashes become Slack, Discord or Teams messages. No server, no
-dashboard, no account, zero runtime dependencies.
+I patched it with some throttling and a counter in Redis. Then I switched jobs
+and wrote basically the same thing again. So I packaged it.
 
 ```
-pip install blare        →  import blare; blare.init()
-npm install @geekvb/blare →  import blare from "@geekvb/blare"; blare.init()
+pip install blare
+import blare; blare.init()
 ```
 
-**The part that took the real work** isn't sending — it's *not* sending.
-Identical failures are fingerprinted together from the error type, the line in
-*your* code (not the line inside the database driver), and the message with its
-variable parts stripped, so `User 4821 not found` and `User 9173 not found` are
-one problem. You get one alert per problem per five minutes, carrying the count
-of everything it suppressed.
+Point `BLARE_SINKS` at your webhook and your existing `logger.error` calls
+start showing up in Slack, Discord or Teams. Same for crashes and framework
+500s. No server, no dashboard, no dependencies.
 
-**One decision I'd do again:** I wrote the behaviour spec before any code — how
-fingerprinting works, the dedupe window, redaction — plus a folder of
-language-neutral JSON fixtures every port's tests read directly. Then I built
-Python, then TypeScript expecting a week of debugging mismatches. The
-fingerprint fixtures passed first run. Same sixteen characters in both
-languages.
+Sending is the easy part. The work went into not sending. Identical errors get
+grouped by type, by the line in your code (not the line inside the DB driver),
+and by the message with the variable bits stripped out. So "User 4821 not
+found" and "User 9173 not found" count as one problem. You get one alert per
+problem per 5 minutes, with a count of everything it held back.
 
-**What it deliberately doesn't do:** no history, no search, no dashboard. If
-you need to investigate a failure next week, run Sentry or Bugsink — different
-problem, and they work fine alongside it. No browser support either: a webhook
-URL in frontend JavaScript is a public secret anyone can use to flood your
-channel.
+Python and Node are both out. I wrote the spec and the test fixtures before any
+code, so both ports produce the same fingerprint for the same error. Built
+Python first, then TypeScript expecting a week of debugging. Fixtures passed on
+the first run.
 
-**Honest status:** v0.1.0, a few hundred tests, and it has not yet been through
-a real production incident. Tested and battle-proven are different claims.
+It's v0.1.0. Well tested, but no real incident has hit it yet. No history or
+search either, so if you need to look something up next week use Sentry or
+Bugsink instead.
 
-Go is next. Happy to answer anything, and genuinely interested in how you've
-solved the muted-channel problem differently.
+Go port next. Happy to answer anything, and curious how you deal with alert
+fatigue.
 
 ---
 
