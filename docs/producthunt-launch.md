@@ -59,6 +59,16 @@ an unanswered pricing field reads as "about to be monetised".
 
 ---
 
+## Thumbnail / logo
+
+Product Hunt's thumbnail field wants a square image, 240x240 minimum.
+
+| File | Use |
+| --- | --- |
+| `ph-logo-512.png` | The one to upload. Scales down cleanly to the 28px it hits in some feed views. |
+| `ph-logo-240.png` | The minimum size, if the uploader objects to 512. |
+| `ph-logo-animated.gif` | Arcs pulsing outward, 2s loop, 112 KB. Product Hunt accepts animated thumbnails and almost nobody uses them, so it stands out in the feed. Rendered on white because PH's page is light. |
+
 ## Gallery images
 
 In `docs/assets/producthunt/`, all 1270×760 (Product Hunt's recommended size).
