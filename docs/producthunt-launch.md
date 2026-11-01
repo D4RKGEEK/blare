@@ -81,8 +81,15 @@ Title, the code being typed, 500 errors firing, then the result: 1 delivered,
 499 suppressed. Those numbers are from a real run against the published
 package, not a mock-up.
 
-`blare-demo.gif` (1.2 MB) is the same thing for places that will not take a
-video: the README, Reddit, Twitter.
+`blare-demo-silent.mp4` is the same cut without audio, for autoplay contexts.
+`blare-demo.gif` (1.2 MB) is for places that will not take a video: the
+README, Reddit, Twitter.
+
+The music is original, synthesised by `tools/generate-demo-music.py`, and
+written against the video's cut points. That matters practically: "royalty
+free" tracks from the usual libraries still get Content ID claims on YouTube,
+and a claim landing on launch day would be a bad morning. This one cannot be
+claimed because nobody else owns it.
 
 Product Hunt prefers a YouTube link over an upload. Upload the MP4 to YouTube
 as unlisted and paste the link in the video field.
