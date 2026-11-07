@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A0A0B">
 
-<title>blare — Send Python &amp; Node.js Errors to Slack, Discord and Teams</title>
-<meta name="description" content="Open-source error alerting for Python and Node.js. Send production errors to Slack, Discord or Teams in two lines. No server, no dashboard, and one message per problem instead of 847.">
+<title>blare — send Python and Node.js errors to Slack, Discord and Teams</title>
+<meta name="description" content="Open-source error alerting for Python and Node.js. Capture, group and deliver production errors to Slack, Discord or Teams in two lines. No server, no dashboard, one message per problem instead of 847.">
 <link rel="canonical" href="https://d4rkgeek.github.io/blare/">
 <meta name="author" content="blare contributors">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -13,24 +14,25 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="blare">
 <meta property="og:url" content="https://d4rkgeek.github.io/blare/">
-<meta property="og:title" content="blare — Send Python &amp; Node.js Errors to Slack, Discord and Teams">
-<meta property="og:description" content="Error alerting in two lines. No server, no dashboard, and one message per problem instead of 847.">
+<meta property="og:title" content="blare — send Python and Node.js errors to Slack, Discord and Teams">
+<meta property="og:description" content="Capture, group and deliver production errors in two lines. No server, no dashboard, one message per problem instead of 847.">
 <meta property="og:image" content="https://d4rkgeek.github.io/blare/assets/social-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="blare: two lines of code turn production errors into one grouped Slack alert.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="blare — Error alerts in Slack, Discord and Teams">
+<meta name="twitter:title" content="blare — error alerts in Slack, Discord and Teams">
 <meta name="twitter:description" content="Two lines. No server. One message per problem instead of 847.">
 <meta name="twitter:image" content="https://d4rkgeek.github.io/blare/assets/social-card.png">
 
-<link rel="icon" href="assets/blare-mark.svg" type="image/svg+xml">
+<link rel="icon" href="assets/blare-mark-flat.svg" type="image/svg+xml">
 <link rel="icon" href="assets/blare-mark-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/blare-mark-180.png">
+<link rel="alternate" type="text/plain" href="llms.txt" title="blare for coding agents">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <script type="application/ld+json">
 {
@@ -72,18 +74,28 @@
         },
         {
           "@type": "Question",
+          "name": "Can a coding agent install blare for me?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. blare publishes an agent-readable brief at https://d4rkgeek.github.io/blare/llms.txt. Point Claude Code, Cursor, Codex or any coding agent at that URL and ask it to wire blare into the repository; it installs the package, calls init() at the right startup path, registers the framework hook and adds the BLARE_SINKS environment variable." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why not just post to a Slack webhook myself?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Posting the message is the easy half. The half that gets skipped is throttling: when one failure fires 847 times you get 847 messages and the channel gets muted. blare adds fingerprinting, a dedupe window, an hourly ceiling, cross-process state, secret redaction and non-blocking delivery around that webhook call." }
+        },
+        {
+          "@type": "Question",
           "name": "Is blare a Sentry alternative?",
           "acceptedAnswer": { "@type": "Answer", "text": "No. Sentry captures, stores, searches and displays errors. blare captures and notifies, then forgets. If you need to investigate a failure next week, use Sentry, GlitchTip or Bugsink. If you want your team to find out in Slack within seconds without running infrastructure, use blare. Many teams run both." }
         },
         {
           "@type": "Question",
           "name": "Does blare need Redis or a database?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. Deduplication state defaults to a single lock-guarded file in the OS temporary directory, which covers every process on one host. Point BLARE_STATE at a Redis URL only when several hosts should deduplicate together." }
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Dedupe state defaults to a single lock-guarded file in the OS temp directory, which covers every process on one host. Point BLARE_STATE at a Redis URL only when you run several hosts and want them to deduplicate together." }
         },
         {
           "@type": "Question",
-          "name": "What happens if Slack goes down?",
-          "acceptedAnswer": { "@type": "Answer", "text": "You lose alerts, never requests. Delivery happens on a worker thread behind a bounded queue, retries twice, and never raises into your application. If the queue fills, blare drops alerts and counts the drops rather than applying back-pressure to production traffic." }
+          "name": "Will blare leak secrets into my chat channel?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Request bodies, local variables, query strings and environment variable values are never collected at all. Everything that does leave is scanned for bearer tokens, JWTs, AWS keys, GitHub and Slack tokens, private keys, URL passwords and card numbers, and keys named password, token, secret or similar are replaced wholesale." }
         }
       ]
     }
@@ -92,492 +104,1241 @@
 </script>
 
 <style>
+/* ==========================================================================
+   blare site. Direction: the product performs.
+   Neutral off-black ground, surfaces one tone step up, one blue accent,
+   status colour only where it means something. No gradients, no glows,
+   no shadows at rest. Geist for text, Geist Mono for literal code only.
+   ========================================================================== */
+
 :root{
-  --bg:#060818; --bg-2:#0a0d22; --card:#0c1024; --line:rgba(255,255,255,.10);
-  --line-2:rgba(255,255,255,.07);
-  --ink:#ffffff; --ink-2:#c7c4de; --ink-3:#8a88a8;
-  --violet:#a855f7; --magenta:#d946ef; --blue:#3b82f6; --rose:#e11d48;
-  --grad:linear-gradient(135deg,#a855f7,#d946ef);
-  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  --r:16px; --maxw:1140px;
+  --bg:#0A0A0B;
+  --bg-raised:#111113;
+  --bg-subtle:#17171A;
+  --bg-muted:#1E1E22;
+  --bg-inset:#0D0D0F;
+  --line:rgba(255,255,255,.07);
+  --line-strong:rgba(255,255,255,.12);
+
+  --fg:#EDEDEF;
+  --fg-2:#A0A0A8;
+  --fg-3:#80808A;
+  --fg-on-primary:#0A0A0B;
+
+  --accent:#4C8DFF;
+  --accent-soft:rgba(76,141,255,.12);
+  --accent-ink:#7AAAFF;
+
+  --ok:#3DD68C;      --ok-soft:rgba(61,214,140,.11);
+  --warn:#F1B24A;    --warn-soft:rgba(241,178,74,.12);
+  --bad:#F2555A;     --bad-soft:rgba(242,85,90,.12);
+  --brand:#F1B24A;
+
+  --font:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:12px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --t-fast:140ms; --t-med:220ms;
+  --nav-h:56px;
+  --content:1200px;
+  color-scheme:dark;
 }
+
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html,body{margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent;scroll-padding-top:calc(var(--nav-h) + 16px)}
 body{
-  margin:0;background:var(--bg);color:var(--ink);
-  font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-  font-size:17px;line-height:1.62;letter-spacing:-.011em;overflow-x:hidden;
+  font-family:var(--font);font-size:15px;line-height:1.55;
+  color:var(--fg);background:var(--bg);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  font-feature-settings:"cv11","ss01";
 }
-h1,h2,h3,h4{margin:0;font-family:Poppins,Inter,sans-serif;font-weight:700;
-  letter-spacing:-.035em;line-height:1.1}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important}
+}
+
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+h1{font-size:clamp(34px,5.4vw,58px);letter-spacing:-.035em}
+h2{font-size:clamp(24px,3vw,33px);letter-spacing:-.03em}
+h3{font-size:17px;letter-spacing:-.01em}
 p{margin:0}
 a{color:inherit;text-decoration:none}
-img{display:block;max-width:100%}
-code{font-family:var(--mono);font-size:.9em}
-::selection{background:var(--violet);color:#fff}
-:focus-visible{outline:2px solid var(--violet);outline-offset:3px;border-radius:4px}
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.skip{position:absolute;left:-9999px;background:var(--violet);color:#fff;padding:12px 18px;z-index:99}
-.skip:focus{left:16px;top:16px}
+ul,ol{margin:0;padding:0;list-style:none}
+code,kbd,pre,.mono{font-family:var(--mono);font-variant-ligatures:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-xs)}
+::selection{background:var(--accent-soft);color:var(--fg)}
+img,svg{display:block;max-width:100%}
+hr{border:0;border-top:1px solid var(--line);margin:0}
 
-/* ---------- ambient glow ---------- */
-.glow{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
-.g1{width:720px;height:720px;left:-260px;top:-320px;background:#7c3aed;opacity:.28}
-.g2{width:640px;height:640px;right:-260px;top:420px;background:#c026d3;opacity:.20}
-.g3{width:700px;height:700px;left:30%;bottom:-420px;background:#2563eb;opacity:.16}
-main,header,footer,nav{position:relative;z-index:1}
+/* ---------- utilities ---------- */
+.wrap{max-width:var(--content);margin:0 auto;padding:0 24px}
+.wrap-narrow{max-width:800px;margin:0 auto;padding:0 24px}
+.fg-2{color:var(--fg-2)}
+.fg-3{color:var(--fg-3)}
+.small{font-size:13.5px}
+.xs{font-size:12.5px}
+.medium{font-weight:500}
+.semibold{font-weight:600}
+.c-ok{color:var(--ok)} .c-warn{color:var(--warn)} .c-bad{color:var(--bad)} .c-accent{color:var(--accent-ink)}
+.stack{display:flex;flex-direction:column}
+.hstack{display:flex;align-items:center}
+.between{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.gap-4{gap:4px}.gap-6{gap:6px}.gap-8{gap:8px}.gap-10{gap:10px}.gap-12{gap:12px}.gap-16{gap:16px}.gap-20{gap:20px}.gap-24{gap:24px}.gap-32{gap:32px}
+.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}.mt-24{margin-top:24px}.mt-32{margin-top:32px}.mt-40{margin-top:40px}
+.grow{flex:1 1 auto;min-width:0}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrapflex{flex-wrap:wrap}
+.lede{font-size:17px;color:var(--fg-2);max-width:62ch;line-height:1.6}
+.link{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid rgba(122,170,255,.3)}
+.link:hover{border-bottom-color:var(--accent-ink)}
+.skip{position:fixed;top:8px;left:8px;z-index:90;padding:8px 12px;background:var(--bg-raised);border:1px solid var(--line-strong);border-radius:var(--r-sm);transform:translateY(-200%)}
+.skip:focus{transform:none}
+.hide-sm{display:initial}
+.show-sm{display:none}
 
 /* ---------- nav ---------- */
-nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);
-  background:rgba(6,8,24,.72);border-bottom:1px solid var(--line-2)}
-.nav-in{max-width:var(--maxw);margin:0 auto;padding:14px 24px;display:flex;
-  align-items:center;gap:28px}
-.brand{display:flex;align-items:center;gap:11px;font-family:Poppins,sans-serif;
-  font-weight:700;font-size:21px;letter-spacing:-.04em}
-.mark{width:34px;height:34px;border-radius:9px;background:var(--grad);
-  display:block;overflow:hidden;flex:0 0 auto}
-.nav-links{display:flex;gap:24px;margin-left:auto;align-items:center;
-  font-size:15px;font-weight:500;color:var(--ink-2)}
-.nav-links a:hover{color:var(--ink)}
-.nav-cta{background:var(--grad);color:#fff;padding:9px 18px;border-radius:10px;
-  font-weight:600;font-size:15px;transition:opacity .2s}
-.nav-cta:hover{opacity:.88}
+.nav{
+  position:sticky;top:0;z-index:20;height:var(--nav-h);
+  background:rgba(10,10,11,.86);
+  border-bottom:1px solid var(--line);
+}
+@supports (backdrop-filter:blur(8px)){.nav{backdrop-filter:saturate(140%) blur(10px)}}
+.nav-in{max-width:var(--content);margin:0 auto;padding:0 24px;height:100%;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:16px;letter-spacing:-.02em;flex:0 0 auto}
+.brand svg{width:22px;height:22px;border-radius:5px}
+.nav-links{display:flex;align-items:center;gap:2px;margin-left:8px;flex:0 1 auto;min-width:0}
+.nav-links a{
+  padding:6px 10px;border-radius:var(--r-sm);font-size:13.5px;color:var(--fg-2);white-space:nowrap;
+  transition:color var(--t-fast) var(--ease),background var(--t-fast) var(--ease);
+}
+.nav-links a:hover{color:var(--fg);background:var(--bg-subtle)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* package pills in the header */
+.pkg{
+  display:inline-flex;align-items:stretch;border:1px solid var(--line-strong);
+  border-radius:var(--r-sm);background:var(--bg-raised);overflow:hidden;height:30px;
+}
+.pkg-mark{
+  display:flex;align-items:center;gap:6px;padding:0 9px;font-size:11.5px;font-weight:600;
+  color:var(--fg-2);background:var(--bg-subtle);border-right:1px solid var(--line);
+  letter-spacing:0;white-space:nowrap;
+}
+.pkg-mark svg{width:13px;height:13px}
+.pkg-cmd{
+  display:flex;align-items:center;gap:8px;padding:0 9px;font-family:var(--mono);
+  font-size:11.5px;color:var(--fg);background:none;border:0;cursor:pointer;white-space:nowrap;
+}
+.pkg-cmd:hover{background:var(--bg-subtle)}
+.pkg-cmd .ico{opacity:.55;flex:0 0 auto}
+.pkg-cmd:hover .ico{opacity:1}
+.pkg-ver{padding:0 9px;display:flex;align-items:center;font-family:var(--mono);font-size:11px;color:var(--fg-3);border-left:1px solid var(--line)}
+.pkg-ver:hover{color:var(--fg);background:var(--bg-subtle)}
+.pkg-ver[hidden]{display:none}
+@media (max-width:1320px){.nav-links{display:none}}
+@media (max-width:1060px){.pkg{display:none}}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:36px;padding:0 14px;border-radius:var(--r-sm);
+  border:1px solid var(--line-strong);background:var(--bg-raised);color:var(--fg);
+  font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;
+  transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease),transform var(--t-fast) var(--ease);
+}
+.btn:hover{background:var(--bg-subtle);border-color:rgba(255,255,255,.18)}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--fg);color:var(--fg-on-primary);border-color:var(--fg);font-weight:600}
+.btn-primary:hover{background:#fff;border-color:#fff}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn-accent:hover{background:#3d7df0;border-color:#3d7df0}
+.btn-ghost{background:none;border-color:transparent;color:var(--fg-2)}
+.btn-ghost:hover{background:var(--bg-subtle);color:var(--fg)}
+.btn-lg{height:42px;padding:0 18px;font-size:15px}
+.btn-sm{height:28px;padding:0 10px;font-size:12.5px}
+.btn-icon{width:30px;padding:0}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn svg{flex:0 0 auto}
+
+/* ---------- surfaces ---------- */
+.card{background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--r-lg)}
+.card.pad{padding:20px}
+.well{background:var(--bg-subtle);border:1px solid var(--line);border-radius:var(--r-md)}
+.inset{background:var(--bg-inset);border:1px solid var(--line);border-radius:var(--r-md)}
+
+.tag{
+  display:inline-flex;align-items:center;gap:5px;height:21px;padding:0 7px;border-radius:var(--r-xs);
+  font-size:11.5px;font-weight:500;background:var(--bg-muted);color:var(--fg-2);border:1px solid transparent;
+}
+.tag .dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.ai{background:var(--accent-soft);color:var(--accent-ink)}
+
+/* ---------- section rhythm ---------- */
+.section{padding:84px 0;border-top:1px solid var(--line)}
+.section.tight{padding:60px 0}
+.section-head{max-width:66ch}
+.section-head h2{margin-bottom:12px}
+.eyebrow-free{font-size:13.5px;color:var(--fg-3)}
 
 /* ---------- hero ---------- */
-.hero{padding:96px 0 72px;text-align:center}
-.pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:30px}
-.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.055);
-  border:1px solid var(--line);border-radius:999px;padding:7px 15px;font-size:14px;
-  font-weight:500;color:var(--ink-2)}
-.pill b{color:var(--ink);font-weight:600}
-.hero h1{font-size:clamp(36px,5.1vw,62px);max-width:22ch;margin:0 auto}
-.hero h1 .accent{background:var(--grad);-webkit-background-clip:text;
-  background-clip:text;color:transparent}
-.hero .lead{margin:26px auto 0;max-width:62ch;font-size:clamp(17px,1.5vw,20px);
-  color:var(--ink-2);line-height:1.6}
-.actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:36px}
-.btn{display:inline-flex;align-items:center;gap:9px;padding:14px 26px;border-radius:12px;
-  font-weight:600;font-size:16px;border:1px solid transparent;cursor:pointer;
-  transition:opacity .2s,background .2s,transform .2s,color .2s}
-.btn-1{background:var(--grad);color:#fff}
-.btn-1:hover{opacity:.88;transform:translateY(-1px)}
-.btn-2{background:rgba(255,255,255,.06);border-color:var(--line);color:var(--ink)}
-.btn-2:hover{background:rgba(255,255,255,.1)}
+.hero{padding:76px 0 0}
+.hero-grid{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:56px;align-items:start}
+@media (max-width:1040px){.hero-grid{grid-template-columns:minmax(0,1fr);gap:36px}}
+.hero-art{position:relative}
+.hero-art .cap{font-size:12.5px;color:var(--fg-3);margin-bottom:10px}
+.hero-art .chan{height:auto}
+.hero-art .chan-body{padding:14px}
+.hero-art .chan-scroll{position:static;inset:auto;overflow:visible}
+.hero h1{max-width:18ch}
+.hero .lede{margin-top:18px;font-size:18px;max-width:58ch}
+.hero-actions{display:flex;align-items:center;gap:10px;margin-top:28px;flex-wrap:wrap}
+.hero-meta{display:flex;align-items:center;gap:14px;margin-top:18px;flex-wrap:wrap;font-size:13px;color:var(--fg-3)}
+.hero-meta .sep{width:1px;height:12px;background:var(--line-strong)}
 
-/* ---------- install tabs ---------- */
-.install{margin:52px auto 0;max-width:620px}
-.tabs{display:flex;gap:6px;justify-content:center;margin-bottom:14px}
-.tab{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--ink-3);
-  padding:8px 18px;border-radius:9px;font:inherit;font-size:14px;font-weight:600;
-  cursor:pointer;transition:background .18s,border-color .18s,color .18s}
-.tab[aria-selected="true"]{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.5);
-  color:var(--ink)}
-.codebox{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-  padding:20px 22px;text-align:left;font-family:var(--mono);font-size:14.5px;line-height:1.95;
-  overflow-x:auto;white-space:pre}
-.codebox .c{color:var(--ink-3)}
-.codebox .k{color:#c084fc}.codebox .f{color:#60a5fa}.codebox .s{color:#34d399}
+/* install switcher */
+.install{margin-top:26px;max-width:560px;width:100%;min-width:0}
+.seg{display:inline-flex;padding:2px;gap:2px;background:var(--bg-subtle);border:1px solid var(--line);border-radius:var(--r-sm)}
+.seg button{
+  height:26px;padding:0 11px;border:0;border-radius:var(--r-xs);background:none;color:var(--fg-3);
+  font:inherit;font-size:12.5px;font-weight:500;cursor:pointer;transition:color var(--t-fast) var(--ease),background var(--t-fast) var(--ease);
+}
+.seg button:hover{color:var(--fg-2)}
+.seg button[aria-pressed="true"]{background:var(--bg-muted);color:var(--fg)}
+.codeblock{position:relative;margin-top:10px;background:var(--bg-inset);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.codeblock pre{margin:0;padding:14px 46px 14px 16px;overflow-x:auto;font-size:13px;line-height:1.75;color:var(--fg)}
+.codeblock .copy{position:absolute;top:8px;right:8px}
+.codeblock.sm pre{padding:11px 44px 11px 13px;font-size:12.5px}
+.tok-c{color:var(--fg-3)}
+.tok-k{color:#C9A2F2}
+.tok-s{color:#8FD6A8}
+.tok-f{color:#7AAAFF}
+.tok-n{color:#E5B06A}
 
-/* ---------- sections ---------- */
-section{padding:84px 0;scroll-margin-top:72px}
-.sec-head{text-align:center;max-width:none;margin-bottom:52px}
-.sec-head h2{font-size:clamp(29px,3.6vw,44px)}
-.sec-head p{margin:18px auto 0;max-width:58ch;color:var(--ink-2);font-size:17px}
-.eyebrow{display:block;font-family:Inter,sans-serif;font-size:14px;font-weight:600;
-  letter-spacing:.04em;text-transform:uppercase;
-  background:var(--grad);-webkit-background-clip:text;background-clip:text;
-  color:transparent;margin-bottom:14px}
+/* ---------- the stage: live channel fragment ---------- */
+.stage{margin-top:56px;border-top:1px solid var(--line);background:var(--bg-inset)}
+.stage-in{max-width:var(--content);margin:0 auto;padding:28px 24px 44px}
+.stage-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.stage-bar .title{font-size:14px;font-weight:600}
+.stage-bar .hint{font-size:13px;color:var(--fg-3)}
+.panes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:900px){.panes{grid-template-columns:minmax(0,1fr)}}
 
-/* ---------- the live demo ---------- */
-.demo-bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
-.demo-read{flex:1 1 320px;color:var(--ink-2);font-size:15.5px;
-  background:rgba(255,255,255,.04);border:1px solid var(--line-2);
-  border-radius:11px;padding:12px 16px}
-.demo-read b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
-.board{background:rgba(255,255,255,.025);border:1px solid var(--line);
-  border-radius:20px;padding:12px;display:grid;gap:8px;overflow:hidden}
-.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;
-  background:var(--card);border:1px solid var(--line-2);border-radius:12px;
-  padding:16px 18px;width:100%;text-align:left;font:inherit;color:var(--ink);
-  cursor:pointer;transition:border-color .18s,background .18s}
-.row:hover{border-color:rgba(168,85,247,.42);background:#10142c}
-.row-name{font-size:17px;font-weight:600;letter-spacing:-.02em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row-meta{display:flex;align-items:center;gap:13px;flex:0 0 auto}
-.row-fact{font-family:var(--mono);font-size:13px;color:var(--ink-3);
-  font-variant-numeric:tabular-nums}
-.tag{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:7px;
-  background:rgba(255,255,255,.07);color:var(--ink-2)}
-.tag-hot{background:rgba(225,29,72,.18);color:#fda4af}
-.row-open{display:block;cursor:default;
-  background:linear-gradient(135deg,rgba(168,85,247,.17),rgba(217,70,239,.1));
-  border-color:rgba(168,85,247,.45);padding:24px}
-.row-open:hover{background:linear-gradient(135deg,rgba(168,85,247,.17),rgba(217,70,239,.1))}
-.row-open .row-name{font-size:clamp(19px,2.3vw,27px);white-space:normal;margin-bottom:14px}
-.row-open p{color:var(--ink-2);font-size:16px;line-height:1.6;max-width:70ch}
-.row-open b{color:var(--ink);font-weight:600}
-.board.flood .row{opacity:.5;padding:11px 18px}
-.board.flood .row-name{font-size:15px}
+.chan{display:flex;flex-direction:column;background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;height:462px}
+.chan.flood{border-color:rgba(242,85,90,.22)}
+.chan.calm{border-color:rgba(61,214,140,.22)}
+.chan-head{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--bg-subtle)}
+.chan-head .name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.chan-head .name .hash{color:var(--fg-3);font-weight:400}
+.chan-head .count{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--fg-3);font-variant-numeric:tabular-nums}
+.chan-body{flex:1 1 auto;overflow:hidden;position:relative;padding:12px}
+.chan-scroll{position:absolute;inset:12px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.chan-scroll::-webkit-scrollbar{width:8px}
+.chan-scroll::-webkit-scrollbar-thumb{background:var(--bg-muted);border-radius:8px}
+.chan-foot{padding:9px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--fg-3);display:flex;align-items:center;gap:8px}
 
-/* ---------- cards ---------- */
-.grid{display:grid;gap:18px}
-.g3c{grid-template-columns:repeat(3,1fr)}
-.g2c{grid-template-columns:repeat(2,1fr)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-  padding:28px;transition:border-color .2s,transform .2s}
-.card:hover{border-color:rgba(168,85,247,.35);transform:translateY(-2px)}
-.card h3{font-size:20px;margin-bottom:12px}
-.card p{color:var(--ink-2);font-size:15.5px;line-height:1.6}
-.card .num{display:inline-flex;align-items:center;justify-content:center;width:38px;
-  height:38px;border-radius:11px;background:var(--grad);font-weight:700;
-  font-size:17px;margin-bottom:18px;font-family:Poppins,sans-serif}
-.card pre{margin:14px 0 0;background:#080b1c;border:1px solid var(--line-2);
-  border-radius:10px;padding:13px 15px;font-family:var(--mono);font-size:13.5px;
-  overflow-x:auto;color:#b9c0d6;line-height:1.7}
+.msg{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.msg:last-child{border-bottom:0}
+.msg .av{width:22px;height:22px;border-radius:var(--r-xs);background:var(--bg-muted);color:var(--fg-2);display:grid;place-items:center;font-size:10px;font-weight:600;flex:0 0 auto}
+.msg .av.bot{background:#241416;color:var(--bad)}
+.msg .who{font-size:12.5px;font-weight:600}
+.msg .ts{font-size:11px;color:var(--fg-3);font-family:var(--mono)}
+.msg .txt{font-size:12.5px;color:var(--fg-2);margin-top:1px;word-break:break-word}
+.msg.in{animation:slidein 200ms var(--ease) both}
+@keyframes slidein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* a real Slack-shaped alert card */
+.alert{border-left:3px solid var(--bad);background:var(--bg-subtle);border-radius:var(--r-sm);padding:12px 14px;margin:4px 0 2px}
+.alert .ttl{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;font-weight:600;line-height:1.35}
+.alert .ttl .sev{color:var(--bad);flex:0 0 auto;margin-top:1px}
+.alert .sub{font-size:12.5px;color:var(--fg-2);margin-top:7px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.alert .sub .b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+.alert .where{font-family:var(--mono);font-size:11.5px;color:var(--fg-3);margin-top:8px}
+.alert .fields{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin-top:11px;padding-top:11px;border-top:1px solid var(--line)}
+.alert .fld{min-width:0}
+.alert .fld .k{font-size:10.5px;color:var(--fg-3);text-transform:none}
+.alert .fld .v{font-size:12px;font-family:var(--mono);color:var(--fg-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alert .acts{display:flex;gap:7px;margin-top:11px}
+.alert .acts span{font-size:11.5px;padding:3px 8px;border:1px solid var(--line-strong);border-radius:var(--r-xs);color:var(--fg-2)}
+.alert.bump{animation:bump 240ms var(--ease)}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.012)}100%{transform:scale(1)}}
+
+.muted-note{display:flex;align-items:center;gap:8px;padding:10px 12px;margin-top:10px;border-radius:var(--r-sm);background:var(--bad-soft);color:var(--bad);font-size:12.5px;font-weight:500}
+.scorebar{display:flex;align-items:baseline;gap:8px;font-variant-numeric:tabular-nums}
+.scorebar .n{font-size:26px;font-weight:600;letter-spacing:-.03em}
+.scorebar .u{font-size:12.5px;color:var(--fg-3)}
+
+/* ---------- pipeline ---------- */
+.pipe-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;align-items:start}
+@media (max-width:980px){.pipe-grid{grid-template-columns:minmax(0,1fr);gap:28px}}
+.steps{margin-top:26px;display:flex;flex-direction:column;gap:2px}
+.step{
+  display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:start;width:100%;text-align:left;
+  padding:13px 14px;border:1px solid transparent;border-radius:var(--r-md);background:none;color:inherit;
+  font:inherit;cursor:pointer;transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease);
+}
+.step:hover{background:var(--bg-raised)}
+.step[aria-selected="true"]{background:var(--bg-raised);border-color:var(--line-strong)}
+.step .mark{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-strong);display:grid;place-items:center;font-size:11px;color:var(--fg-3);font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.step[aria-selected="true"] .mark{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+.step h3{font-size:14.5px;margin-bottom:3px}
+.step p{font-size:13px;color:var(--fg-2)}
+.step[aria-selected="true"] h3{color:var(--fg)}
+
+.diagram{background:var(--bg-inset);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;position:sticky;top:calc(var(--nav-h) + 20px)}
+@media (max-width:980px){.diagram{position:static}}
+.diagram svg{width:100%;height:auto}
+.dnode rect{transition:fill var(--t-med) var(--ease),stroke var(--t-med) var(--ease)}
+.dnode text{transition:fill var(--t-med) var(--ease)}
+.dflow{stroke-dasharray:4 5;animation:dash 1.1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-18}}
+.stage-detail{margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+.stage-detail .kv{display:grid;grid-template-columns:132px 1fr;gap:7px 14px;font-size:12.5px}
+.stage-detail .kv dt{color:var(--fg-3)}
+.stage-detail .kv dd{margin:0;font-family:var(--mono);color:var(--fg-2);word-break:break-all}
+
+/* ---------- fingerprint lab ---------- */
+.lab{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;align-items:start}
+@media (max-width:980px){.lab{grid-template-columns:minmax(0,1fr);gap:28px}}
+.fp-rows{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+.fp-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:11px 13px;background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--r-md)}
+.fp-row input{
+  width:100%;background:none;border:0;color:var(--fg);font-family:var(--mono);font-size:12.5px;padding:0;
+}
+.fp-row input:focus{outline:none}
+.fp-row .fp{font-family:var(--mono);font-size:12px;color:var(--fg-3);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.fp-row .swatch{width:9px;height:9px;border-radius:2px;background:var(--fg-3)}
+.fp-row[data-group="a"] .swatch{background:var(--accent)} .fp-row[data-group="a"] .fp{color:var(--accent-ink)}
+.fp-row[data-group="b"] .swatch{background:var(--ok)} .fp-row[data-group="b"] .fp{color:var(--ok)}
+.fp-row[data-group="c"] .swatch{background:var(--warn)} .fp-row[data-group="c"] .fp{color:var(--warn)}
+.fp-row[data-group="d"] .swatch{background:var(--bad)} .fp-row[data-group="d"] .fp{color:var(--bad)}
+.fp-out{margin-top:16px;padding:14px;background:var(--bg-inset);border:1px solid var(--line);border-radius:var(--r-md);font-size:13px;color:var(--fg-2)}
+.fp-out b{color:var(--fg)}
+.norm{font-family:var(--mono);font-size:12px;color:var(--fg-3);margin-top:9px}
+.norm mark{background:var(--accent-soft);color:var(--accent-ink);padding:0 2px;border-radius:2px}
+
+/* ---------- matrix table ---------- */
+.table{width:100%;border-collapse:collapse;font-size:13.5px}
+.table th,.table td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.table thead th{font-size:12px;font-weight:600;color:var(--fg-3);border-bottom-color:var(--line-strong);white-space:nowrap}
+.table tbody tr:last-child td{border-bottom:0}
+.table tbody tr:hover{background:var(--bg-raised)}
+.table td.key{color:var(--fg);font-weight:500;white-space:nowrap}
+.table code{font-size:12.5px;color:var(--fg-2);background:var(--bg-subtle);padding:1px 5px;border-radius:var(--r-xs)}
+.table .right{text-align:right;font-variant-numeric:tabular-nums}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg-raised)}
+.tscroll .table{min-width:620px}
+
+/* ---------- sinks ---------- */
+.sink-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:26px}
+@media (max-width:900px){.sink-grid{grid-template-columns:minmax(0,1fr)}}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:0;overflow-x:auto}
+.tab{
+  position:relative;padding:9px 13px;border:0;background:none;color:var(--fg-3);font:inherit;font-size:13.5px;
+  font-weight:500;cursor:pointer;white-space:nowrap;transition:color var(--t-fast) var(--ease);
+}
+.tab:hover{color:var(--fg-2)}
+.tab[aria-selected="true"]{color:var(--fg)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--fg);border-radius:2px}
+.panel-body{padding:20px 0 0}
+.payload{background:var(--bg-inset);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.payload-head{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11.5px;color:var(--fg-3);background:var(--bg-subtle)}
+.payload pre{margin:0;padding:14px;overflow:auto;max-height:340px;font-size:12px;line-height:1.7;color:var(--fg-2)}
+
+/* rendered chat cards per sink */
+.render{border-radius:var(--r-md);padding:14px;border:1px solid var(--line);background:var(--bg-subtle)}
+.render.slack{border-left:3px solid var(--bad)}
+.render.discord{border-left:3px solid #5865F2}
+.render.teams{border-top:3px solid var(--bad);border-left:1px solid var(--line)}
+.render h4{font-size:13.5px;margin-bottom:6px}
+.render .row{font-size:12.5px;color:var(--fg-2);margin-top:4px}
+.render .mono{font-family:var(--mono);font-size:11.5px;color:var(--fg-3)}
+
+/* ---------- agent section ---------- */
+.agent{background:var(--bg-inset);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.agent-grid{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:40px;align-items:start}
+@media (max-width:980px){.agent-grid{grid-template-columns:minmax(0,1fr);gap:26px}}
+.prompt{background:var(--bg-raised);border:1px solid var(--line-strong);border-radius:var(--r-lg);overflow:hidden}
+.prompt-head{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--line);background:var(--bg-subtle)}
+.prompt-head .w{font-size:12.5px;color:var(--fg-3);font-family:var(--mono)}
+.prompt pre{margin:0;padding:16px;font-size:12.5px;line-height:1.75;color:var(--fg-2);overflow-x:auto;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
+.prompt-foot{display:flex;align-items:center;gap:10px;padding:11px 13px;border-top:1px solid var(--line);flex-wrap:wrap}
+.agent-points{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.agent-points li{display:grid;grid-template-columns:18px 1fr;gap:11px;font-size:13.5px;color:var(--fg-2)}
+.agent-points svg{margin-top:3px;color:var(--ok)}
+.agent-points b{color:var(--fg);font-weight:600}
+
+/* ---------- redaction ---------- */
+.redact{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+@media (max-width:900px){.redact{grid-template-columns:minmax(0,1fr)}}
+.redact textarea{
+  width:100%;min-height:168px;resize:vertical;background:var(--bg-inset);color:var(--fg);
+  border:1px solid var(--line);border-radius:var(--r-md);padding:13px;font-family:var(--mono);font-size:12.5px;line-height:1.7;
+}
+.redact textarea:focus{outline:none;border-color:var(--accent)}
+.redact .out{background:var(--bg-inset);border:1px solid var(--line);border-radius:var(--r-md);padding:13px;font-family:var(--mono);font-size:12.5px;line-height:1.7;min-height:168px;white-space:pre-wrap;word-break:break-word;color:var(--fg-2)}
+.redact .out s{background:var(--bad-soft);color:var(--bad);text-decoration:none;padding:0 3px;border-radius:2px}
+.field-label{display:block;font-size:12.5px;color:var(--fg-3);margin-bottom:7px}
 
 /* ---------- ports ---------- */
-.ports{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px}
-.port{background:var(--card);border:1px solid var(--line);border-radius:14px;
-  padding:22px;display:flex;flex-direction:column;gap:7px}
-.port.live{border-color:rgba(168,85,247,.5);
-  background:linear-gradient(145deg,rgba(168,85,247,.13),rgba(12,16,36,1))}
-.port h3{font-size:19px}
-.port span{font-size:14px;color:var(--ink-3)}
-.port code{font-size:12.5px;color:var(--ink-2);background:rgba(255,255,255,.06);
-  padding:4px 9px;border-radius:6px;align-self:flex-start;margin-top:4px}
+.ports{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-top:26px}
+.port{padding:14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--bg-raised)}
+.port.live{border-color:rgba(61,214,140,.22)}
+.port h3{font-size:14px;display:flex;align-items:center;gap:7px}
+.port .st{font-size:12px;color:var(--fg-3);margin-top:3px}
+.port code{display:block;margin-top:9px;font-size:11.5px;color:var(--fg-2)}
 
 /* ---------- faq ---------- */
-.faq{display:grid;gap:12px;max-width:860px;margin:0 auto}
-details{background:var(--card);border:1px solid var(--line);border-radius:14px;
-  overflow:hidden}
-details[open]{border-color:rgba(168,85,247,.38)}
-summary{padding:20px 24px;font-weight:600;font-size:17px;cursor:pointer;
-  list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:center}
-summary::-webkit-details-marker{display:none}
-summary::after{content:"+";font-size:22px;color:var(--ink-3);flex:0 0 auto;line-height:1}
-details[open] summary::after{content:"\2013"}
-details p{padding:0 24px 22px;color:var(--ink-2);font-size:16px;line-height:1.66}
-
-/* ---------- cta ---------- */
-.cta-box{background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(37,99,235,.14));
-  border:1px solid rgba(168,85,247,.34);border-radius:24px;padding:56px 40px;text-align:center}
-.cta-box h2{font-size:clamp(28px,3.6vw,42px)}
-.cta-box p{margin:18px auto 0;max-width:52ch;color:var(--ink-2)}
-
-/* ---------- footer ---------- */
-footer{border-top:1px solid var(--line-2);padding:52px 0 40px;margin-top:40px}
-.foot{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:34px}
-.foot h4{font-family:Inter,sans-serif;font-size:14px;font-weight:600;
-  color:var(--ink-3);margin-bottom:14px;letter-spacing:.02em}
-.foot a{display:block;font-size:15px;color:var(--ink-2);padding:3px 0}
-.foot a:hover{color:var(--ink)}
-.foot-note{margin-top:42px;padding-top:26px;border-top:1px solid var(--line-2);
-  color:var(--ink-3);font-size:14px;display:flex;justify-content:space-between;
-  gap:18px;flex-wrap:wrap}
-
-/* ---------- motion ---------- */
-.rise{opacity:0;transform:translateY(22px);
-  transition:opacity .62s cubic-bezier(.22,.61,.36,1),transform .62s cubic-bezier(.22,.61,.36,1)}
-.rise.in{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){
-  .rise{opacity:1;transform:none;transition:none}
-  html{scroll-behavior:auto}
+.faq{border-top:1px solid var(--line);margin-top:26px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{
+  display:flex;align-items:center;gap:12px;padding:17px 2px;cursor:pointer;font-size:15px;font-weight:500;
+  list-style:none;transition:color var(--t-fast) var(--ease);
 }
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:var(--fg)}
+.faq summary .chev{margin-left:auto;color:var(--fg-3);transition:transform var(--t-med) var(--ease);flex:0 0 auto}
+.faq details[open] summary .chev{transform:rotate(45deg)}
+.faq .ans{padding:0 2px 20px;font-size:14px;color:var(--fg-2);max-width:72ch;line-height:1.65}
+.faq .ans p + p{margin-top:11px}
 
-/* ---------- responsive ---------- */
-@media (max-width:900px){
-  .g3c,.g2c{grid-template-columns:1fr}
-  .foot{grid-template-columns:1fr 1fr}
-  .nav-links a:not(.nav-cta){display:none}
-  .hero{padding:64px 0 52px}
-  section{padding:62px 0}
-  .row-fact{display:none}
-  .cta-box{padding:40px 22px}
+/* ---------- cta + footer ---------- */
+.cta{padding:92px 0;text-align:center;border-top:1px solid var(--line)}
+.cta h2{max-width:20ch;margin:0 auto}
+.cta .lede{margin:14px auto 0}
+.cta-actions{display:flex;gap:10px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+footer{border-top:1px solid var(--line);padding:40px 0 48px;background:var(--bg-inset)}
+.foot-grid{display:flex;gap:40px;flex-wrap:wrap;justify-content:space-between}
+.foot-col{min-width:150px}
+.foot-col h4{font-size:12.5px;color:var(--fg-3);font-weight:500;margin-bottom:11px}
+.foot-col a{display:block;font-size:13.5px;color:var(--fg-2);padding:3px 0}
+.foot-col a:hover{color:var(--fg)}
+.foot-end{margin-top:36px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--fg-3)}
+.kw{margin-top:14px;font-size:11.5px;color:#4A4A52;line-height:1.7;max-width:900px}
+
+/* toast */
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translate(-50%,140%);z-index:80;
+  display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:var(--r-sm);
+  background:var(--bg-muted);border:1px solid var(--line-strong);color:var(--fg);font-size:13.5px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);transition:transform var(--t-med) var(--ease);
+}
+.toast[data-state="open"]{transform:translate(-50%,0)}
+
+@media (max-width:760px){
+  :root{--nav-h:52px}
+  .hide-sm{display:none!important}
+  .show-sm{display:initial}
+  .section{padding:60px 0}
+  .hero{padding:48px 0 0}
+  .stage-in{padding:22px 16px 32px}
+  .wrap,.wrap-narrow,.nav-in{padding:0 16px}
+  .chan{height:400px}
+  .alert .fields{grid-template-columns:minmax(0,1fr)}
+  .cta{padding:64px 0}
 }
 </style>
-<noscript><style>
-  /* Content must never depend on script to be visible. */
-  .rise{opacity:1 !important;transform:none !important}
-</style></noscript>
 </head>
 <body>
-<a class="skip" href="#demo">Skip to the demonstration</a>
-<div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
+<a class="skip" href="#main">Skip to content</a>
 
-<nav>
+<header class="nav">
   <div class="nav-in">
-    <a class="brand" href="/blare/">
-      <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><circle cx="21" cy="32" r="6" fill="#fff"/><path d="M33 20.5a17 17 0 0 1 0 23" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="M45 12a29 29 0 0 1 0 40" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round" opacity=".45"/></svg></span>
+    <a class="brand" href="/blare/" aria-label="blare, home">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="15" fill="#17171A"/>
+        <circle cx="21" cy="32" r="6" fill="#F1B24A"/>
+        <path d="M33 20.5a17 17 0 0 1 0 23" stroke="#EDEDEF" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+        <path d="M45 12a29 29 0 0 1 0 40" stroke="#EDEDEF" stroke-width="6.5" fill="none" stroke-linecap="round" opacity=".4"/>
+      </svg>
       blare
     </a>
-    <div class="nav-links">
-      <a href="#demo">Demo</a>
+
+    <nav class="nav-links hide-sm" aria-label="Sections">
       <a href="#how">How it works</a>
-      <a href="#captures">Integrations</a>
+      <a href="#capture">Captures</a>
+      <a href="#sinks">Sends</a>
+      <a href="#agent">With an agent</a>
+      <a href="#config">Config</a>
       <a href="#faq">FAQ</a>
-      <a class="nav-cta" href="https://github.com/D4RKGEEK/blare">GitHub</a>
-    </div>
-  </div>
-</nav>
+    </nav>
 
-<header class="hero">
-  <div class="wrap">
-    <div class="pills">
-      <span class="pill"><b>Python</b> &amp; <b>Node.js</b></span>
-      <span class="pill">No server</span>
-      <span class="pill">Zero dependencies</span>
-      <span class="pill">Apache-2.0</span>
-    </div>
-    <h1>Send production errors to <span class="accent">Slack, Discord and Teams</span></h1>
-    <p class="lead">
-      Two lines of setup. No server, no database, no dashboard. And when the same
-      failure fires 847 times, your channel gets <strong>one message</strong>, not 847.
-    </p>
-    <div class="actions">
-      <a class="btn btn-1" href="#install">Install in two lines</a>
-      <a class="btn btn-2" href="#demo">See it group 847 errors</a>
-    </div>
-
-    <div class="install" id="install">
-      <div class="tabs" role="tablist" aria-label="Choose a language">
-        <button class="tab" role="tab" id="tab-py" aria-selected="true" aria-controls="panel-py">Python</button>
-        <button class="tab" role="tab" id="tab-js" aria-selected="false" aria-controls="panel-js">Node.js</button>
+    <div class="nav-right">
+      <!-- package pills: PyPI and npm, live versions -->
+      <div class="pkg hide-sm">
+        <a class="pkg-mark" href="https://pypi.org/project/blare/" target="_blank" rel="noopener" title="blare on PyPI">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11.9 2c-1.6 0-3 .2-3.9.6-.9.4-1.3 1-1.3 1.8v2.2h5.2v.7H4.6c-1 0-1.8.5-2.3 1.6C1.8 10 1.7 11 1.7 12s.1 2 .5 3c.5 1.2 1.3 1.8 2.4 1.8h1.8v-2.6c0-1.2.5-2.1 1.5-2.7.8-.5 1.8-.7 3-.7h3.4c1 0 1.8-.3 2.4-.9.6-.6.9-1.4.9-2.3V4.4c0-.8-.5-1.4-1.4-1.8-.9-.4-2.2-.6-3.8-.6h-.5Zm-2.3 1.6c.4 0 .7.3.7.8s-.3.8-.7.8-.8-.3-.8-.8.4-.8.8-.8Z" fill="#4C8DFF"/><path d="M12.1 22c1.6 0 3-.2 3.9-.6.9-.4 1.3-1 1.3-1.8v-2.2h-5.2v-.7h7.3c1 0 1.8-.5 2.3-1.6.4-1.1.5-2.1.5-3.1s-.1-2-.5-3c-.5-1.2-1.3-1.8-2.4-1.8h-1.8v2.6c0 1.2-.5 2.1-1.5 2.7-.8.5-1.8.7-3 .7h-3.4c-1 0-1.8.3-2.4.9-.6.6-.9 1.4-.9 2.3v3.2c0 .8.5 1.4 1.4 1.8.9.4 2.2.6 3.8.6h.6Zm2.3-1.6c-.4 0-.7-.3-.7-.8s.3-.8.7-.8.8.3.8.8-.4.8-.8.8Z" fill="#F1B24A"/></svg>
+          PyPI
+        </a>
+        <button class="pkg-cmd" data-copy="pip install blare" title="Copy: pip install blare">
+          pip install blare
+          <svg class="ico" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+        </button>
+        <a class="pkg-ver" href="https://pypi.org/project/blare/" target="_blank" rel="noopener"><img src="https://img.shields.io/pypi/v/blare?label=&amp;color=%2317171A&amp;labelColor=%2317171A&amp;style=flat-square" alt="blare version on PyPI" height="14" loading="lazy"></a>
       </div>
-      <div class="codebox" id="panel-py" role="tabpanel" aria-labelledby="tab-py"><span class="c">$</span> pip install blare
 
-<span class="k">import</span> blare
-blare.<span class="f">init</span>()
+      <div class="pkg hide-sm">
+        <a class="pkg-mark" href="https://www.npmjs.com/package/@geekvb/blare" target="_blank" rel="noopener" title="@geekvb/blare on npm">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="7" width="22" height="10" fill="#F2555A"/><path d="M4 9.5h5.5v5H8V11H6.5v3.5H4v-5Zm6.8 0h5.4v6.9h-2.5v-1.9h-1.3v-5h-1.6v5h-2.5V9.5h2.5Zm-.1 1.5v2h1.4v-2h-1.4Zm6.8-1.5H23v5h-2.5V11H19v3.5h-1.5v-5Z" fill="#0A0A0B"/></svg>
+          npm
+        </a>
+        <button class="pkg-cmd" data-copy="npm i @geekvb/blare" title="Copy: npm i @geekvb/blare">
+          npm i @geekvb/blare
+          <svg class="ico" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+        </button>
+        <a class="pkg-ver" href="https://www.npmjs.com/package/@geekvb/blare" target="_blank" rel="noopener"><img src="https://img.shields.io/npm/v/%40geekvb%2Fblare?label=&amp;color=%2317171A&amp;labelColor=%2317171A&amp;style=flat-square" alt="@geekvb/blare version on npm" height="14" loading="lazy"></a>
+      </div>
 
-<span class="c"># .env</span>
-BLARE_SINKS=<span class="s">https://hooks.slack.com/services/…</span></div>
-      <div class="codebox" id="panel-js" role="tabpanel" aria-labelledby="tab-js" hidden><span class="c">$</span> npm install @geekvb/blare
-
-<span class="k">import</span> blare <span class="k">from</span> <span class="s">"@geekvb/blare"</span>;
-blare.<span class="f">init</span>();
-
-<span class="c">// .env</span>
-BLARE_SINKS=<span class="s">https://hooks.slack.com/services/…</span></div>
+      <a class="btn btn-sm" href="https://github.com/D4RKGEEK/blare" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38v-1.33c-2.23.49-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.05-.49.05-.49.81.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .66-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        <span class="hide-sm">GitHub</span>
+      </a>
     </div>
   </div>
 </header>
 
-<main>
+<main id="main">
 
-<section id="demo" aria-labelledby="demo-h">
-  <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">The demonstration</span>
-      <h2 id="demo-h">A channel nobody mutes</h2>
-      <p>Six real problems, one message each. Switch blare off to see the same five
-        minutes without it.</p>
-    </div>
-    <div class="demo-bar rise">
-      <button class="btn btn-1" id="toggle" type="button" aria-pressed="false">Turn blare off</button>
-      <p class="demo-read" id="readout">Six real problems, one message each.
-        <b>Press the button</b> to see the same five minutes without blare.</p>
-    </div>
-    <div class="board rise" id="rows" aria-live="polite">
-      <button class="row" type="button">
-        <span class="row-name">KeyError: user not found</span>
-        <span class="row-meta"><span class="row-fact">app/users.py:88</span><span class="tag">12 times</span></span>
-      </button>
-      <button class="row" type="button">
-        <span class="row-name">TimeoutError: upstream did not answer</span>
-        <span class="row-meta"><span class="row-fact">app/http.py:31</span><span class="tag">3 times</span></span>
-      </button>
-      <button class="row" type="button">
-        <span class="row-name">ValidationError: invalid currency</span>
-        <span class="row-meta"><span class="row-fact">app/money.py:17</span><span class="tag">41 times</span></span>
-      </button>
-      <div class="row row-open">
-        <span class="row-name">OperationalError: connection pool exhausted</span>
-        <p><b>847 occurrences in the last five minutes, delivered as this one message.</b>
-          Fingerprinted from the type, the line in your code, and the message with its
-          variable parts removed — so <b>User 4821 not found</b> and
-          <b>User 9173 not found</b> are one problem, not two.</p>
+<!-- ============================ hero ============================ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+   <div>
+    <h1>Your error channel, unmuted.</h1>
+    <p class="lede">blare catches every crash in your Python and Node services, groups the identical ones into a single message, and posts it to Slack, Discord or Teams. No server, no database, no dashboard — a library and one environment variable.</p>
+
+    <div class="install" role="group" aria-label="Install blare">
+      <div class="seg" data-single role="group" aria-label="Choose a language">
+        <button type="button" data-lang="py" aria-pressed="true">Python</button>
+        <button type="button" data-lang="js" aria-pressed="false">Node.js</button>
       </div>
-      <button class="row" type="button">
-        <span class="row-name">OSError: no space left on device</span>
-        <span class="row-meta"><span class="row-fact">app/export.py:54</span><span class="tag tag-hot">recurring</span></span>
-      </button>
-      <button class="row" type="button">
-        <span class="row-name">RuntimeError: payment provider unreachable</span>
-        <span class="row-meta"><span class="row-fact">app/pay.py:12</span><span class="tag">2 times</span></span>
-      </button>
+      <div class="codeblock" id="install-block">
+        <button class="btn btn-sm btn-icon copy" data-copy-target="install-code" aria-label="Copy install snippet">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+        </button>
+        <pre id="install-code"><code></code></pre>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="#agent">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1l1.2 3.4L12.6 5.6 9.2 6.8 8 10.2 6.8 6.8 3.4 5.6 6.8 4.4 8 1Zm4.6 7.2l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7.7-1.9Zm-8.4 1l.5 1.4 1.4.5-1.4.5L4.2 13l-.5-1.4-1.4-.5 1.4-.5.5-1.4Z"/></svg>
+        Let an agent wire it up
+      </a>
+      <a class="btn btn-lg" href="#how">See how it works</a>
+      <a class="btn btn-lg" href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md" target="_blank" rel="noopener">Read the spec</a>
+    </div>
+
+    <div class="hero-meta">
+      <span>Apache-2.0</span><span class="sep" aria-hidden="true"></span>
+      <span>Python 3.9+ and Node 18+</span><span class="sep" aria-hidden="true"></span>
+      <span>No account, no API key</span>
+    </div>
+   </div>
+
+   <!-- the artefact, at the size it really arrives -->
+   <div class="hero-art">
+     <p class="cap">What arrives when 847 crashes share one cause</p>
+     <div class="chan calm">
+       <div class="chan-head">
+         <span class="name"><span class="hash">#</span>alerts</span>
+         <span class="count">10:04 UTC</span>
+       </div>
+       <div class="chan-body">
+         <div class="chan-scroll">
+           <div class="msg">
+             <span class="av bot">BL</span>
+             <div class="grow">
+               <div class="hstack gap-8"><span class="who">blare</span><span class="ts">10:04</span><span class="tag" style="height:18px">APP</span></div>
+               <div class="alert">
+                 <div class="ttl"><span class="sev">●</span><span>OperationalError: connection pool exhausted (size 5, overflow 10)</span></div>
+                 <div class="sub"><span>checkout-api · production</span><span class="fg-3">—</span><span class="b">847 times</span><span>in the last 5 min</span></div>
+                 <div class="where">app/payments.py:142 in charge</div>
+                 <div class="fields">
+                   <div class="fld"><div class="k">Fingerprint</div><div class="v">7c1e4f09a2b85d33</div></div>
+                   <div class="fld"><div class="k">First seen</div><div class="v">10:04:00 UTC</div></div>
+                   <div class="fld"><div class="k">Suppressed</div><div class="v">846 in window</div></div>
+                   <div class="fld"><div class="k">Hour budget</div><div class="v">1 of 20 used</div></div>
+                 </div>
+                 <div class="acts"><span>Open runbook</span><span>Silence 1h</span><span>Copy fingerprint</span></div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+       <div class="chan-foot">Not 847 messages. Not a second summary message either — the count rides along.</div>
+     </div>
+   </div>
+  </div>
+
+  <!-- ============== the stage: a channel that actually floods ============== -->
+  <div class="stage">
+    <div class="stage-in">
+      <div class="stage-bar">
+        <span class="title">The same outage, two channels</span>
+        <span class="hint">Both panes run the real grouping rules in your browser. Press the button.</span>
+        <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-accent" id="fire">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.5c2.2 2.2 4.5 3.9 4.5 7a4.5 4.5 0 0 1-9 0c0-1.5.6-2.6 1.5-3.7.2 1 .7 1.7 1.4 2 .3-2 .8-3.6 1.6-5.3Z"/></svg>
+            Fire 847 errors
+          </button>
+          <button class="btn" id="reset">Reset</button>
+        </div>
+      </div>
+
+      <div class="panes">
+        <!-- without blare -->
+        <div class="chan flood">
+          <div class="chan-head">
+            <span class="name"><span class="hash">#</span>alerts <span class="tag bad">no throttling</span></span>
+            <span class="count" id="raw-count">0 messages</span>
+          </div>
+          <div class="chan-body"><div class="chan-scroll" id="raw-feed" aria-live="off" aria-label="Channel without blare"></div></div>
+          <div class="chan-foot" id="raw-foot">A webhook call in an <code>except</code> block. One message per crash.</div>
+        </div>
+
+        <!-- with blare -->
+        <div class="chan calm">
+          <div class="chan-head">
+            <span class="name"><span class="hash">#</span>alerts <span class="tag ok">blare</span></span>
+            <span class="count" id="blare-count">0 messages</span>
+          </div>
+          <div class="chan-body"><div class="chan-scroll" id="blare-feed" aria-live="polite" aria-label="Channel with blare"></div></div>
+          <div class="chan-foot" id="blare-foot">Fingerprinted, deduped in a 5-minute window, capped at 20 an hour.</div>
+        </div>
+      </div>
+
+      <div class="between mt-20" style="align-items:flex-end;flex-wrap:wrap;gap:24px">
+        <div class="hstack gap-32 wrapflex">
+          <div>
+            <div class="scorebar"><span class="n c-bad" id="score-raw">0</span><span class="u">messages without blare</span></div>
+          </div>
+          <div>
+            <div class="scorebar"><span class="n c-ok" id="score-blare">0</span><span class="u">with blare</span></div>
+          </div>
+          <div>
+            <div class="scorebar"><span class="n" id="score-sup">0</span><span class="u">suppressed, counted on the alert</span></div>
+          </div>
+        </div>
+        <p class="small fg-3" style="max-width:40ch">Three distinct failures are firing at once: a pool exhaustion, a null deref and a gateway timeout. blare keeps them apart and still sends three messages, not 847.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="how" aria-labelledby="how-h">
+<!-- ============================ how it works ============================ -->
+<section class="section" id="how" aria-labelledby="how-h">
   <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">How it works</span>
-      <h2 id="how-h">Capture, decide, deliver</h2>
-      <p>Two of those are easy. The middle one is why this is a library and not a snippet.</p>
-    </div>
-    <div class="grid g3c">
-      <article class="card rise">
-        <span class="num">1</span>
-        <h3>Capture</h3>
-        <p>A handler on your logger and a hook for crashes. The <code>logger.error</code>
-          calls you already wrote become alerts, with no change at the call sites.</p>
-      </article>
-      <article class="card rise">
-        <span class="num">2</span>
-        <h3>Decide</h3>
-        <p>Fingerprint, group, throttle, cap, redact. Nearly all of the work, and the only
-          question that matters at 3&nbsp;a.m.: is this worth waking someone for, or is it
-          the four hundredth copy of something already reported?</p>
-      </article>
-      <article class="card rise">
-        <span class="num">3</span>
-        <h3>Deliver</h3>
-        <p>Rendered for your provider and posted on a worker thread behind a bounded
-          queue, so a chat outage can never become back-pressure on production traffic.</p>
-      </article>
+    <div class="pipe-grid">
+      <div>
+        <div class="section-head">
+          <h2 id="how-h">One crash, five decisions, one message</h2>
+          <p class="lede">Everything between the exception and the webhook is where a weekend script turns into a library. Pick a stage to follow the hero incident through it.</p>
+        </div>
+
+        <div class="steps" role="tablist" aria-label="Pipeline stages" id="stage-tabs">
+          <button class="step" role="tab" id="st-capture" aria-controls="sp-capture" aria-selected="true" data-stage="capture">
+            <span class="mark">1</span>
+            <span><h3>Capture</h3><p>A logging handler, the uncaught-exception hooks and one framework hook. Your existing <code>logger.error</code> calls already qualify.</p></span>
+          </button>
+          <button class="step" role="tab" id="st-fingerprint" aria-controls="sp-fingerprint" aria-selected="false" data-stage="fingerprint">
+            <span class="mark">2</span>
+            <span><h3>Fingerprint</h3><p>Exception type, the innermost frame in <em>your</em> code, and the message with its variable parts stripped out. Stable across hosts, processes and languages.</p></span>
+          </button>
+          <button class="step" role="tab" id="st-throttle" aria-controls="sp-throttle" aria-selected="false" data-stage="throttle">
+            <span class="mark">3</span>
+            <span><h3>Throttle</h3><p>One alert per fingerprint per window, a hard ceiling per hour, and the suppressed count carried on the next alert so nothing is hidden.</p></span>
+          </button>
+          <button class="step" role="tab" id="st-redact" aria-controls="sp-redact" aria-selected="false" data-stage="redact">
+            <span class="mark">4</span>
+            <span><h3>Redact</h3><p>Runs after fingerprinting, so a new rule can never regroup your history, and before rendering, so no sink sees a raw value.</p></span>
+          </button>
+          <button class="step" role="tab" id="st-deliver" aria-controls="sp-deliver" aria-selected="false" data-stage="deliver">
+            <span class="mark">5</span>
+            <span><h3>Render and deliver</h3><p>Block Kit, an embed or an Adaptive Card, chosen from the webhook hostname. Sent on a worker thread behind a bounded queue — it never raises into your request.</p></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- the pinned diagram -->
+      <div class="diagram">
+        <svg viewBox="0 0 640 516" role="img" aria-labelledby="diag-t diag-d">
+          <title id="diag-t">The blare pipeline</title>
+          <desc id="diag-d">An exception leaves your service, passes through capture, fingerprinting, throttling and redaction, is rendered per destination, and is delivered to Slack, Discord, Teams or any webhook.</desc>
+
+          <defs>
+            <marker id="arw" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0 1 L8 5 L0 9 z" fill="#4A4A52"/>
+            </marker>
+          </defs>
+
+          <!-- source -->
+          <g class="dnode" data-stage="capture">
+            <rect x="60" y="8" width="520" height="52" rx="8" fill="#17171A" stroke="rgba(255,255,255,.10)"/>
+            <text x="80" y="31" fill="#EDEDEF" font-family="Geist, sans-serif" font-size="13.5" font-weight="600">Your service</text>
+            <text x="80" y="48" fill="#80808A" font-family="Geist Mono, monospace" font-size="11">logger.error() · uncaught exception · unhandledRejection · middleware</text>
+          </g>
+
+          <!-- spine -->
+          <path class="dflow" d="M320 60 V 92" stroke="#4A4A52" stroke-width="1.5" fill="none"/>
+          <path class="dflow" d="M320 136 V 168" stroke="#4A4A52" stroke-width="1.5" fill="none"/>
+          <path class="dflow" d="M320 212 V 244" stroke="#4A4A52" stroke-width="1.5" fill="none"/>
+          <path class="dflow" d="M320 288 V 320" stroke="#4A4A52" stroke-width="1.5" fill="none"/>
+          <path class="dflow" d="M320 364 V 396" stroke="#4A4A52" stroke-width="1.5" fill="none"/>
+
+          <!-- 1 capture -->
+          <g class="dnode" data-stage="capture">
+            <rect x="170" y="92" width="300" height="44" rx="8" fill="#111113" stroke="rgba(255,255,255,.10)"/>
+            <text x="190" y="112" fill="#EDEDEF" font-family="Geist, sans-serif" font-size="13" font-weight="600">1 · Capture</text>
+            <text x="190" y="127" fill="#80808A" font-family="Geist Mono, monospace" font-size="10.5">level ≥ BLARE_LEVEL, BLARE_IGNORE applied</text>
+          </g>
+          <!-- 2 fingerprint -->
+          <g class="dnode" data-stage="fingerprint">
+            <rect x="170" y="168" width="300" height="44" rx="8" fill="#111113" stroke="rgba(255,255,255,.10)"/>
+            <text x="190" y="188" fill="#EDEDEF" font-family="Geist, sans-serif" font-size="13" font-weight="600">2 · Fingerprint</text>
+            <text x="190" y="203" fill="#80808A" font-family="Geist Mono, monospace" font-size="10.5">type + your frame + normalised message</text>
+          </g>
+          <!-- 3 throttle -->
+          <g class="dnode" data-stage="throttle">
+            <rect x="170" y="244" width="300" height="44" rx="8" fill="#111113" stroke="rgba(255,255,255,.10)"/>
+            <text x="190" y="264" fill="#EDEDEF" font-family="Geist, sans-serif" font-size="13" font-weight="600">3 · Throttle</text>
+            <text x="190" y="279" fill="#80808A" font-family="Geist Mono, monospace" font-size="10.5">dedupe window · 20/hour ceiling · shared state</text>
+          </g>
+          <!-- suppressed branch -->
+          <path d="M470 266 H 540" stroke="#4A4A52" stroke-width="1.5" fill="none" marker-end="url(#arw)"/>
+          <text x="546" y="263" fill="#80808A" font-family="Geist, sans-serif" font-size="10.5">dropped,</text>
+          <text x="546" y="275" fill="#80808A" font-family="Geist, sans-serif" font-size="10.5">counted</text>
+          <!-- shared state -->
+          <g class="dnode" data-stage="throttle">
+            <rect x="30" y="246" width="116" height="40" rx="8" fill="#0D0D0F" stroke="rgba(255,255,255,.07)"/>
+            <text x="44" y="263" fill="#A0A0A8" font-family="Geist, sans-serif" font-size="11" font-weight="500">Shared state</text>
+            <text x="44" y="277" fill="#80808A" font-family="Geist Mono, monospace" font-size="10">file · redis</text>
+          </g>
+          <path d="M146 266 H 170" stroke="#4A4A52" stroke-width="1.5" fill="none"/>
+          <!-- 4 redact -->
+          <g class="dnode" data-stage="redact">
+            <rect x="170" y="320" width="300" height="44" rx="8" fill="#111113" stroke="rgba(255,255,255,.10)"/>
+            <text x="190" y="340" fill="#EDEDEF" font-family="Geist, sans-serif" font-size="13" font-weight="600">4 · Redact</text>
+            <text x="190" y="355" fill="#80808A" font-family="Geist Mono, monospace" font-size="10.5">tokens, keys, card numbers, named keys</text>
+          </g>
+          <!-- 5 render -->
+          <g class="dnode" data-stage="deliver">
+            <rect x="170" y="396" width="300" height="44" rx="8" fill="#111113" stroke="rgba(255,255,255,.10)"/>
+            <text x="190" y="416" fill="#EDEDEF" font-family="Geist, sans-serif" font-size="13" font-weight="600">5 · Render per destination</text>
+            <text x="190" y="431" fill="#80808A" font-family="Geist Mono, monospace" font-size="10.5">hostname → Block Kit, embed or Card</text>
+          </g>
+
+          <!-- fan out -->
+          <path d="M240 440 V 462 H 96 V 476" stroke="#4A4A52" stroke-width="1.5" fill="none" marker-end="url(#arw)"/>
+          <path d="M290 440 V 462 H 240 V 476" stroke="#4A4A52" stroke-width="1.5" fill="none" marker-end="url(#arw)"/>
+          <path d="M350 440 V 462 H 400 V 476" stroke="#4A4A52" stroke-width="1.5" fill="none" marker-end="url(#arw)"/>
+          <path d="M400 440 V 462 H 544 V 476" stroke="#4A4A52" stroke-width="1.5" fill="none" marker-end="url(#arw)"/>
+
+          <g class="dnode" data-stage="deliver">
+            <rect x="34" y="476" width="124" height="32" rx="7" fill="#17171A" stroke="rgba(255,255,255,.10)"/>
+            <text x="96" y="496" fill="#EDEDEF" text-anchor="middle" font-family="Geist, sans-serif" font-size="12" font-weight="500">Slack</text>
+            <rect x="178" y="476" width="124" height="32" rx="7" fill="#17171A" stroke="rgba(255,255,255,.10)"/>
+            <text x="240" y="496" fill="#EDEDEF" text-anchor="middle" font-family="Geist, sans-serif" font-size="12" font-weight="500">Discord</text>
+            <rect x="338" y="476" width="124" height="32" rx="7" fill="#17171A" stroke="rgba(255,255,255,.10)"/>
+            <text x="400" y="496" fill="#EDEDEF" text-anchor="middle" font-family="Geist, sans-serif" font-size="12" font-weight="500">Teams</text>
+            <rect x="482" y="476" width="124" height="32" rx="7" fill="#17171A" stroke="rgba(255,255,255,.10)"/>
+            <text x="544" y="496" fill="#EDEDEF" text-anchor="middle" font-family="Geist, sans-serif" font-size="12" font-weight="500">Any webhook</text>
+          </g>
+        </svg>
+
+        <div class="stage-detail">
+          <div role="tabpanel" id="sp-capture" aria-labelledby="st-capture">
+            <dl class="kv">
+              <dt>Enters as</dt><dd>OperationalError: connection pool exhausted (size 5, overflow 10)</dd>
+              <dt>Level</dt><dd>ERROR ≥ BLARE_LEVEL</dd>
+              <dt>Frame picked</dt><dd>app/payments.py:142 in charge</dd>
+              <dt>Skipped frames</dt><dd>site-packages/sqlalchemy/… , site-packages/psycopg2/…</dd>
+            </dl>
+          </div>
+          <div role="tabpanel" id="sp-fingerprint" aria-labelledby="st-fingerprint" hidden>
+            <dl class="kv">
+              <dt>Normalised</dt><dd>connection pool exhausted (size N, overflow N)</dd>
+              <dt>Inputs</dt><dd>OperationalError ∥ app/payments.py:142 ∥ normalised</dd>
+              <dt>Fingerprint</dt><dd>7c1e4f09a2b85d33</dd>
+              <dt>Also matches</dt><dd>the same failure on every host, in every worker, in both ports</dd>
+            </dl>
+          </div>
+          <div role="tabpanel" id="sp-throttle" aria-labelledby="st-throttle" hidden>
+            <dl class="kv">
+              <dt>Window</dt><dd>300s since last alert for 7c1e4f09a2b85d33</dd>
+              <dt>Decision</dt><dd>send · suppress 846 · carry the count</dd>
+              <dt>Hour budget</dt><dd>3 of 20 used</dd>
+              <dt>State</dt><dd>/tmp/blare-state.json, lock-guarded, shared by 4 workers</dd>
+            </dl>
+          </div>
+          <div role="tabpanel" id="sp-redact" aria-labelledby="st-redact" hidden>
+            <dl class="kv">
+              <dt>Never collected</dt><dd>locals · request body · response body · query string · env values</dd>
+              <dt>Scrubbed</dt><dd>bearer tokens · JWTs · AWS keys · GitHub and Slack tokens · PEM keys · URL passwords · Luhn-valid cards</dd>
+              <dt>Keys replaced</dt><dd>password · token · secret · authorization · cookie · +2 dozen</dd>
+              <dt>Order</dt><dd>after fingerprinting, before rendering</dd>
+            </dl>
+          </div>
+          <div role="tabpanel" id="sp-deliver" aria-labelledby="st-deliver" hidden>
+            <dl class="kv">
+              <dt>Chosen by</dt><dd>hooks.slack.com → Block Kit</dd>
+              <dt>Transport</dt><dd>worker thread · bounded queue · 2 retries</dd>
+              <dt>On failure</dt><dd>drop and count; never block the request</dd>
+              <dt>If Slack is down</dt><dd>you lose alerts, never traffic</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="captures" aria-labelledby="cap-h">
+<!-- ============================ fingerprint lab ============================ -->
+<section class="section" id="fingerprint" aria-labelledby="fp-h">
   <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">Integrations</span>
+    <div class="lab">
+      <div class="section-head">
+        <h2 id="fp-h">Why 847 becomes 1</h2>
+        <p class="lede">The grouping is not a string match. Numbers, UUIDs, hex, emails, paths, URLs and quoted values are replaced before hashing, so the same bug with different data is one problem.</p>
+        <p class="small fg-3 mt-16">Edit any line. Lines that share a colour share a fingerprint, and would share one alert.</p>
+        <div class="mt-16 hstack gap-8 wrapflex">
+          <a class="btn btn-sm" href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md#4-fingerprinting" target="_blank" rel="noopener">Fingerprinting in the spec</a>
+          <a class="btn btn-sm" href="https://github.com/D4RKGEEK/blare/tree/main/conformance" target="_blank" rel="noopener">Conformance fixtures</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="fp-rows" id="fp-rows">
+          <div class="fp-row"><input value="User 4821 not found" aria-label="Error message 1" spellcheck="false" autocomplete="off"><span class="fp"><span class="swatch" aria-hidden="true"></span><span class="h">—</span></span></div>
+          <div class="fp-row"><input value="User 9173 not found" aria-label="Error message 2" spellcheck="false" autocomplete="off"><span class="fp"><span class="swatch" aria-hidden="true"></span><span class="h">—</span></span></div>
+          <div class="fp-row"><input value="Timeout after 30.2s calling https://api.stripe.com/v1/charges" aria-label="Error message 3" spellcheck="false" autocomplete="off"><span class="fp"><span class="swatch" aria-hidden="true"></span><span class="h">—</span></span></div>
+          <div class="fp-row"><input value="Timeout after 4.7s calling https://api.stripe.com/v1/refunds" aria-label="Error message 4" spellcheck="false" autocomplete="off"><span class="fp"><span class="swatch" aria-hidden="true"></span><span class="h">—</span></span></div>
+          <div class="fp-row"><input value="Order 0f6b2c1e-9a44-4d2f-bb21-77c0f2f1a8de failed validation" aria-label="Error message 5" spellcheck="false" autocomplete="off"><span class="fp"><span class="swatch" aria-hidden="true"></span><span class="h">—</span></span></div>
+          <div class="fp-row"><input value="Order 7d1a9f33-2b58-41ce-9e07-5c24b8ee0a91 failed validation" aria-label="Error message 6" spellcheck="false" autocomplete="off"><span class="fp"><span class="swatch" aria-hidden="true"></span><span class="h">—</span></span></div>
+          <div class="fp-row"><input value="Disk usage at 94% on /var/lib/postgresql" aria-label="Error message 7" spellcheck="false" autocomplete="off"><span class="fp"><span class="swatch" aria-hidden="true"></span><span class="h">—</span></span></div>
+        </div>
+        <div class="fp-out" id="fp-out"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ what it captures ============================ -->
+<section class="section" id="capture" aria-labelledby="cap-h">
+  <div class="wrap">
+    <div class="section-head">
       <h2 id="cap-h">Works with what you already run</h2>
-      <p>Log and crash capture need no code changes at all. A framework takes one line.</p>
+      <p class="lede">The first two rows need no code changes at all — <code>blare.init()</code> installs them. Frameworks take one line.</p>
     </div>
-    <div class="grid g2c">
-      <article class="card rise">
-        <h3>Python</h3>
-        <p>FastAPI, Starlette, Litestar, Quart, Flask, Django, Celery, and any WSGI app.
-          Plus the standard <code>logging</code> module and unhandled exceptions.</p>
-        <pre><code>app.add_middleware(BlareASGIMiddleware)   # FastAPI
-install(app)                              # Flask
-install()                                 # Django, Celery</code></pre>
-      </article>
-      <article class="card rise">
-        <h3>Node.js &amp; TypeScript</h3>
-        <p>Express, Fastify, NestJS and Next.js on the server, plus pino and winston,
-          <code>uncaughtException</code> and <code>unhandledRejection</code>.</p>
-        <pre><code>app.use(blareErrorHandler());             // Express
-app.register(blarePlugin);                // Fastify
-export { onRequestError } from "@geekvb/blare/next";</code></pre>
-      </article>
-      <article class="card rise">
-        <h3>Slack, Discord, Microsoft Teams</h3>
-        <p>Paste the webhook URL your chat tool gave you. The provider is detected from
-          the hostname, so there is no URL scheme to learn. Teams has two incompatible
-          webhook shapes; blare picks the right one by host.</p>
-      </article>
-      <article class="card rise">
-        <h3>Anything else</h3>
-        <p>The generic sink posts the canonical event as JSON, unchanged. PagerDuty,
-          n8n, a Lambda or your own relay all work today without blare knowing about
-          them.</p>
-        <pre><code>{"fingerprint":"9f2a41c7b0e3d518",
- "occurrences":{"since_last_alert":847}}</code></pre>
-      </article>
+
+    <div class="tscroll mt-24">
+      <table class="table">
+        <caption class="xs fg-3" style="text-align:left;padding:12px 14px 0">What blare hooks, per runtime</caption>
+        <thead>
+          <tr><th style="width:190px">Source</th><th>Python</th><th>Node.js / TypeScript</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="key">Existing log calls</td>
+            <td><code>logging</code> handler on the root logger</td>
+            <td>pino stream · winston transport</td>
+          </tr>
+          <tr>
+            <td class="key">Unhandled crashes</td>
+            <td><code>sys.excepthook</code> · thread hook</td>
+            <td><code>uncaughtException</code> · <code>unhandledRejection</code></td>
+          </tr>
+          <tr>
+            <td class="key">Web frameworks</td>
+            <td>FastAPI · Starlette · Litestar · Quart · Flask · Django · any WSGI app</td>
+            <td>Express · Fastify · NestJS · Next.js (server)</td>
+          </tr>
+          <tr>
+            <td class="key">Background jobs</td>
+            <td>Celery</td>
+            <td><span class="fg-3">—</span></td>
+          </tr>
+          <tr>
+            <td class="key">Manual</td>
+            <td><code>blare.capture(exc)</code></td>
+            <td><code>blare.capture(err)</code></td>
+          </tr>
+          <tr>
+            <td class="key">Verify the wiring</td>
+            <td><code>python -m blare --send</code></td>
+            <td><code>npx @geekvb/blare --send</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sink-grid" style="margin-top:18px">
+      <div class="codeblock">
+        <button class="btn btn-sm btn-icon copy" data-copy-target="code-py" aria-label="Copy the Python snippet">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+        </button>
+<pre id="code-py"><code><span class="tok-c"># Python: FastAPI</span>
+<span class="tok-k">import</span> blare
+<span class="tok-k">from</span> blare.integrations.asgi <span class="tok-k">import</span> BlareASGIMiddleware
+
+blare.<span class="tok-f">init</span>()
+app.<span class="tok-f">add_middleware</span>(BlareASGIMiddleware)
+
+<span class="tok-c"># Flask / Django / Celery</span>
+<span class="tok-k">from</span> blare.integrations.flask <span class="tok-k">import</span> install
+<span class="tok-f">install</span>(app)</code></pre>
+      </div>
+      <div class="codeblock">
+        <button class="btn btn-sm btn-icon copy" data-copy-target="code-js" aria-label="Copy the Node snippet">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+        </button>
+<pre id="code-js"><code><span class="tok-c">// Node: Express</span>
+<span class="tok-k">import</span> blare, { blareErrorHandler } <span class="tok-k">from</span> <span class="tok-s">"@geekvb/blare"</span>;
+
+blare.<span class="tok-f">init</span>();
+app.<span class="tok-f">use</span>(<span class="tok-f">blareErrorHandler</span>());  <span class="tok-c">// after your routes</span>
+
+<span class="tok-c">// Fastify</span>
+app.<span class="tok-f">register</span>(blarePlugin);</code></pre>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="ports" aria-labelledby="ports-h">
+<!-- ============================ where it sends ============================ -->
+<section class="section" id="sinks" aria-labelledby="sink-h">
   <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">One spec, every language</span>
-      <h2 id="ports-h">Same failure, same fingerprint</h2>
-      <p>The behaviour is specified before it is implemented, and every port is tested
-        against the same JSON fixtures. A Node service and a Python service in one fleet
-        group the same failure under the same sixteen characters.</p>
+    <div class="section-head">
+      <h2 id="sink-h">One URL decides the format</h2>
+      <p class="lede">Paste the webhook URL your chat tool gave you. blare reads the hostname and renders the native format — there is no scheme to learn and no per-service config. Several URLs, comma separated, all get a copy.</p>
     </div>
+
+    <div class="mt-24">
+      <div class="tabs" role="tablist" aria-label="Destinations" id="sink-tabs">
+        <button class="tab" role="tab" id="sk-slack" aria-controls="skp-slack" aria-selected="true" data-sink="slack">Slack</button>
+        <button class="tab" role="tab" id="sk-discord" aria-controls="skp-discord" aria-selected="false" data-sink="discord">Discord</button>
+        <button class="tab" role="tab" id="sk-teams" aria-controls="skp-teams" aria-selected="false" data-sink="teams">Microsoft Teams</button>
+        <button class="tab" role="tab" id="sk-generic" aria-controls="skp-generic" aria-selected="false" data-sink="generic">Any webhook</button>
+        <button class="tab" role="tab" id="sk-console" aria-controls="skp-console" aria-selected="false" data-sink="console">Console</button>
+      </div>
+
+      <div class="panel-body">
+        <div class="sink-grid" style="margin-top:0">
+          <div>
+            <p class="small fg-3" style="margin-bottom:10px">What lands in the channel</p>
+            <div id="sink-render"></div>
+            <p class="small fg-3 mt-16" id="sink-note"></p>
+            <div class="well mt-20" style="padding:15px">
+              <h3 style="font-size:13.5px">Every destination carries the same facts</h3>
+              <p class="small fg-2 mt-8">What changes between them is only the envelope. The problem, the service, the environment, the occurrence count, the culprit frame and the fingerprint are in all five, because they all come from one canonical event defined in <a class="link" href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md#7-the-canonical-event" target="_blank" rel="noopener">SPEC.md section 7</a>.</p>
+            </div>
+          </div>
+          <div>
+            <p class="small fg-3" style="margin-bottom:10px">What goes over the wire</p>
+            <div class="payload">
+              <div class="payload-head"><span id="sink-url">POST https://hooks.slack.com/services/T000/B000/xxxx</span></div>
+              <pre id="sink-payload"></pre>
+            </div>
+          </div>
+        </div>
+
+        <div role="tabpanel" id="skp-slack" aria-labelledby="sk-slack" hidden></div>
+        <div role="tabpanel" id="skp-discord" aria-labelledby="sk-discord" hidden></div>
+        <div role="tabpanel" id="skp-teams" aria-labelledby="sk-teams" hidden></div>
+        <div role="tabpanel" id="skp-generic" aria-labelledby="sk-generic" hidden></div>
+        <div role="tabpanel" id="skp-console" aria-labelledby="sk-console" hidden></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ let an agent do it ============================ -->
+<section class="section agent" id="agent" aria-labelledby="ag-h">
+  <div class="wrap">
+    <div class="agent-grid">
+      <div>
+        <span class="tag ai">For coding agents</span>
+        <div class="section-head mt-16">
+          <h2 id="ag-h">Or don't wire it up yourself</h2>
+          <p class="lede">blare publishes a machine-readable brief at <a class="link" href="llms.txt">/blare/llms.txt</a>. Point Claude Code, Cursor, Codex, Copilot or any agent at it and the whole integration — package, init call, framework hook, environment variable, smoke test — is one prompt.</p>
+        </div>
+
+        <ul class="agent-points">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 5"/></svg>
+            <span><b>It finds the right startup path.</b> The agent reads your entry point and puts <code>init()</code> before the first import that can fail, not at the bottom of a random module.</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 5"/></svg>
+            <span><b>It picks the framework hook.</b> One of eleven, decided from your dependency file rather than guessed.</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 5"/></svg>
+            <span><b>It never commits your webhook.</b> The brief tells it to put <code>BLARE_SINKS</code> in the environment and <code>.env.example</code>, never in tracked code.</span>
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 5"/></svg>
+            <span><b>It proves the wiring.</b> The last step is <code>--send</code>, so the agent finishes by making a real message appear in your channel.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="prompt">
+          <div class="prompt-head">
+            <div class="seg" data-single role="group" aria-label="Choose an agent">
+              <button type="button" data-agent="claude" aria-pressed="true">Claude Code</button>
+              <button type="button" data-agent="cursor" aria-pressed="false">Cursor</button>
+              <button type="button" data-agent="generic" aria-pressed="false">Any agent</button>
+              <button type="button" data-agent="rules" aria-pressed="false">Repo rule file</button>
+            </div>
+            <span class="w" id="prompt-w"></span>
+          </div>
+          <pre id="prompt-text"></pre>
+          <div class="prompt-foot">
+            <button class="btn btn-primary btn-sm" data-copy-target="prompt-text">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+              Copy the prompt
+            </button>
+            <a class="btn btn-sm" href="llms.txt">Read llms.txt</a>
+            <a class="btn btn-sm" href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md" target="_blank" rel="noopener">SPEC.md</a>
+            <span class="xs fg-3" id="prompt-hint"></span>
+          </div>
+        </div>
+
+        <div class="card pad mt-20">
+          <div class="between">
+            <div>
+              <h3>Already have an MCP-capable agent?</h3>
+              <p class="small fg-2 mt-4">The generic sink posts the canonical event as JSON, so an agent that owns a webhook endpoint can consume blare directly — no blare-specific client.</p>
+            </div>
+          </div>
+          <div class="codeblock sm mt-16">
+            <button class="btn btn-sm btn-icon copy" data-copy-target="code-agent-sink" aria-label="Copy the agent sink example">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
+            </button>
+<pre id="code-agent-sink"><code><span class="tok-c"># one copy to the team, one to your agent's endpoint</span>
+BLARE_SINKS=https://hooks.slack.com/services/T000/B000/xxxx,https://agent.internal/blare</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ privacy ============================ -->
+<section class="section" id="privacy" aria-labelledby="pr-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="pr-h">It posts into a chat room, so it is paranoid</h2>
+      <p class="lede">Local variables, request bodies, response bodies, query strings and environment variable values are never collected in any configuration. Everything that does leave is scrubbed. Try it: paste something that shouldn't leak.</p>
+    </div>
+
+    <div class="redact">
+      <div>
+        <label class="field-label" for="redact-in">A message on its way out</label>
+        <textarea id="redact-in" spellcheck="false" autocomplete="off" aria-describedby="redact-help">Auth failed for Authorization: Bearer EXAMPLE0NOTAREALTOKEN0abcdef123456
+db = postgres://admin:Hunter2Hunter@db.internal:5432/orders
+aws_key=AKIAEXAMPLENOTREAL00 card 4242 4242 4242 4242
+{"user_token": "ghp_EXAMPLEnotarealtoken0123456789abcd", "retry_after": 30}</textarea>
+        <p class="xs fg-3 mt-8" id="redact-help">Runs locally in your browser with the spec's patterns. Nothing is sent anywhere.</p>
+      </div>
+      <div>
+        <span class="field-label">What the channel sees</span>
+        <div class="out" id="redact-out" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="tscroll mt-24">
+      <table class="table">
+        <thead><tr><th style="width:200px">Class</th><th>Rule</th></tr></thead>
+        <tbody>
+          <tr><td class="key">Never collected</td><td>locals, request and response bodies, query strings, environment variable values — there is no flag that turns these on</td></tr>
+          <tr><td class="key">Pattern-scrubbed</td><td>bearer tokens, JWTs, AWS access keys, GitHub and Slack tokens, PEM private keys, passwords inside connection strings, Luhn-valid card numbers</td></tr>
+          <tr><td class="key">Key-scrubbed</td><td><code>password</code>, <code>token</code>, <code>secret</code>, <code>authorization</code>, <code>cookie</code> and two dozen more, replaced wholesale at any depth</td></tr>
+          <tr><td class="key">Order</td><td>redaction runs <em>after</em> fingerprinting — changing a rule can never regroup your history — and <em>before</em> rendering, so no sink ever sees a raw value</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ config ============================ -->
+<section class="section" id="config" aria-labelledby="cfg-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="cfg-h">The whole configuration surface</h2>
+      <p class="lede">Ten environment variables. There is no config file, no init options you have to learn, and nothing to run.</p>
+    </div>
+
+    <div class="tscroll mt-24">
+      <table class="table">
+        <thead><tr><th style="width:230px">Variable</th><th style="width:120px">Default</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td class="key"><code>BLARE_SINKS</code></td><td><span class="fg-3">—</span></td><td>Webhook URLs, comma separated. The only one you must set.</td></tr>
+          <tr><td class="key"><code>BLARE_ENV</code></td><td><code>unknown</code></td><td>Shown on every alert: <code>production</code>, <code>staging</code>, a branch name.</td></tr>
+          <tr><td class="key"><code>BLARE_SERVICE</code></td><td><span class="fg-3">derived</span></td><td>The service name on the alert. Defaults to the process or package name.</td></tr>
+          <tr><td class="key"><code>BLARE_LEVEL</code></td><td><code>ERROR</code></td><td>Minimum level that alerts. <code>WARNING</code> if you want more.</td></tr>
+          <tr><td class="key"><code>BLARE_DEDUPE_WINDOW</code></td><td><code>300</code></td><td>Seconds of silence per fingerprint after an alert goes out.</td></tr>
+          <tr><td class="key"><code>BLARE_MAX_PER_HOUR</code></td><td><code>20</code></td><td>Hard ceiling across all problems. <code>0</code> disables the ceiling.</td></tr>
+          <tr><td class="key"><code>BLARE_IGNORE</code></td><td><span class="fg-3">—</span></td><td>Glob patterns dropped before anything else runs.</td></tr>
+          <tr><td class="key"><code>BLARE_STATE</code></td><td><code>file</code></td><td><code>memory</code>, <code>file</code>, or <code>redis://…</code> to dedupe across hosts.</td></tr>
+          <tr><td class="key"><code>BLARE_DRY_RUN</code></td><td><code>false</code></td><td>Render to stderr and send nothing. Good for a first deploy.</td></tr>
+          <tr><td class="key"><code>BLARE_ENABLED</code></td><td><code>true</code></td><td>The off switch, for when you need one at 3am.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small fg-3 mt-16">Every one of these is normative in <a class="link" href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md#2-configuration" target="_blank" rel="noopener">SPEC.md section 2</a>, so each port reads them identically.</p>
+  </div>
+</section>
+
+<!-- ============================ spec and ports ============================ -->
+<section class="section" id="ports" aria-labelledby="po-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="po-h">Same failure, same fingerprint, every language</h2>
+      <p class="lede">blare is specified first and implemented per language. <code>SPEC.md</code> defines fingerprinting, throttling, redaction and the payload exactly, and <code>conformance/</code> holds the shared JSON fixtures every port must pass — so a Node service and a Python service in one fleet group the same failure under the same hash, byte for byte.</p>
+    </div>
+
     <div class="ports">
-      <div class="port live rise"><h3>Python</h3><span>Shipping · v0.1</span><code>pip install blare</code></div>
-      <div class="port live rise"><h3>TypeScript</h3><span>Shipping · v0.1</span><code>npm i @geekvb/blare</code></div>
-      <div class="port rise"><h3>Go</h3><span>Next</span></div>
-      <div class="port rise"><h3>Java</h3><span>Planned</span></div>
-      <div class="port rise"><h3>Ruby</h3><span>Planned</span></div>
-      <div class="port rise"><h3>PHP</h3><span>Planned</span></div>
-      <div class="port rise"><h3>.NET</h3><span>Planned</span></div>
+      <div class="port live"><h3>Python <span class="tag ok"><span class="dot" aria-hidden="true"></span>v0.1</span></h3><p class="st">3.9 and up</p><code>pip install blare</code></div>
+      <div class="port live"><h3>TypeScript <span class="tag ok"><span class="dot" aria-hidden="true"></span>v0.1</span></h3><p class="st">Node 18 and up</p><code>npm i @geekvb/blare</code></div>
+      <div class="port"><h3>Go</h3><p class="st">Next up</p></div>
+      <div class="port"><h3>Java · Kotlin</h3><p class="st">Planned</p></div>
+      <div class="port"><h3>Ruby</h3><p class="st">Planned</p></div>
+      <div class="port"><h3>PHP</h3><p class="st">Planned</p></div>
+      <div class="port"><h3>.NET</h3><p class="st">Planned</p></div>
+      <div class="port"><h3>Browser · React</h3><p class="st">Needs a relay first</p></div>
+    </div>
+
+    <div class="card pad mt-24">
+      <div class="between wrapflex">
+        <div style="max-width:60ch">
+          <h3>Adding a port is a spec exercise, not a guessing game</h3>
+          <p class="small fg-2 mt-8">Implement the spec, pass the fixtures. You never have to ask what "correct" means — the JSON already says. If you think blare makes a wrong call, open an issue against <code>SPEC.md</code> rather than one port: the behaviour is the thing being argued about.</p>
+        </div>
+        <div class="hstack gap-8 wrapflex">
+          <a class="btn" href="https://github.com/D4RKGEEK/blare/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
+          <a class="btn" href="https://github.com/D4RKGEEK/blare/tree/main/conformance" target="_blank" rel="noopener">Fixtures</a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="faq" aria-labelledby="faq-h">
+<!-- ============================ boundaries ============================ -->
+<section class="section" id="scope" aria-labelledby="sc-h">
   <div class="wrap">
-    <div class="sec-head rise">
-      <span class="eyebrow">Questions</span>
+    <div class="section-head">
+      <h2 id="sc-h">What blare is not</h2>
+      <p class="lede">The gaps are deliberate, and saying so up front is cheaper than disappointing you in week two.</p>
+    </div>
+
+    <div class="tscroll mt-24">
+      <table class="table">
+        <thead><tr><th style="width:230px">Tool</th><th>What it does</th><th>What it leaves to you</th></tr></thead>
+        <tbody>
+          <tr><td class="key">Apprise · Shoutrrr</td><td>Deliver a message to 100+ services</td><td>They capture nothing — you write the glue</td></tr>
+          <tr><td class="key">Sentry · GlitchTip · Bugsink</td><td>Capture, store, search and display errors</td><td>A server, a database and a dashboard to run</td></tr>
+          <tr><td class="key">express-error-slack and friends</td><td>The glue, for one framework and one channel</td><td>One language, no grouping, mostly unmaintained</td></tr>
+          <tr><td class="key"><span class="c-accent">blare</span></td><td>Capture, group and deliver, as a library</td><td>No history, no search, no UI — on purpose</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sink-grid mt-24">
+      <div class="well" style="padding:18px">
+        <h3>No history, search or dashboard</h3>
+        <p class="small fg-2 mt-8">It is a library. If you need to look a failure up next week, run an error tracker and let blare stay out of it — they solve different problems and work fine together.</p>
+      </div>
+      <div class="well" style="padding:18px">
+        <h3>No metrics, traces or uptime checks</h3>
+        <p class="small fg-2 mt-8">Not an observability platform, and not trying to become one. It alerts operators, never your users.</p>
+      </div>
+      <div class="well" style="padding:18px">
+        <h3>No browser support yet</h3>
+        <p class="small fg-2 mt-8">A webhook URL in frontend JavaScript is a public secret — anyone can read it and spam your channel. Browser capture needs a relay through your own backend, and that comes after the server-side ports.</p>
+      </div>
+      <div class="well" style="padding:18px">
+        <h3>Not battle-proven yet</h3>
+        <p class="small fg-2 mt-8">v0.1.0, a few hundred tests, behaviour pinned to shared fixtures rather than to anyone's memory. It has not yet run through a real production incident — tested and battle-proven are different claims.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ faq ============================ -->
+<section class="section" id="faq" aria-labelledby="faq-h">
+  <div class="wrap-narrow">
+    <div class="section-head">
       <h2 id="faq-h">Frequently asked</h2>
     </div>
+
     <div class="faq">
-      <details class="rise" open>
-        <summary>How do I send Python errors to Slack?</summary>
-        <p><code>pip install blare</code>, call <code>blare.init()</code> once at startup,
-          and set <code>BLARE_SINKS</code> to your Slack incoming-webhook URL. Every
-          <code>logger.error(...)</code> call you already have, plus every unhandled
-          exception, becomes a Slack message — grouped, so a flood arrives as one message
-          with a count.</p>
+      <details>
+        <summary>Why not just post to a Slack webhook myself?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans">
+          <p>Because posting the message is the easy half. The half that gets skipped is the throttling: when one failure fires 847 times, you get 847 messages, and the channel is muted by Friday.</p>
+          <p>Around that one webhook call blare adds fingerprinting, a dedupe window, an hourly ceiling, cross-process state, the right stack frame, secret redaction, and delivery on a worker thread that never raises into your request. You will write the first half in an afternoon and the second half a week later, after it bites you.</p>
+        </div>
       </details>
-      <details class="rise">
-        <summary>How do I send Node.js or Express errors to Discord?</summary>
-        <p><code>npm install @geekvb/blare</code>, call <code>blare.init()</code>, and add
-          <code>app.use(blareErrorHandler())</code> after your routes. Set
-          <code>BLARE_SINKS</code> to your Discord webhook URL; blare detects Discord from
-          the hostname and renders an embed.</p>
+      <details>
+        <summary>How do I send Python errors to Slack?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p><code>pip install blare</code>, call <code>blare.init()</code> once at startup, and set <code>BLARE_SINKS</code> to your Slack incoming-webhook URL. Every <code>logger.error(...)</code> call you already have, plus every unhandled exception, becomes a Slack message — grouped, so a flood arrives as one message with a count.</p></div>
       </details>
-      <details class="rise">
-        <summary>Is this a Sentry alternative?</summary>
-        <p>No, and it is worth being precise. Sentry captures, stores, searches and
-          displays errors. blare captures and notifies, then forgets. If you want to
-          investigate a failure next week, you want Sentry, GlitchTip or Bugsink. If you
-          want your team to find out in Slack within seconds without running any
-          infrastructure, you want blare. Plenty of teams would reasonably run both.</p>
+      <details>
+        <summary>How do I send Node.js or Express errors to Discord?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p><code>npm install @geekvb/blare</code>, call <code>blare.init()</code>, and add <code>app.use(blareErrorHandler())</code> after your routes. Set <code>BLARE_SINKS</code> to your Discord webhook URL — blare detects Discord from the hostname and renders an embed.</p></div>
       </details>
-      <details class="rise">
-        <summary>Does it need Redis or a database?</summary>
-        <p>No. Dedupe state defaults to a single lock-guarded file in the OS temp
-          directory, which is enough for every process on one host. Point
-          <code>BLARE_STATE</code> at a Redis URL only when you run several hosts and want
-          them to deduplicate together.</p>
+      <details>
+        <summary>Can a coding agent install it for me?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p>Yes, and that is the shortest path. <a class="link" href="llms.txt">llms.txt</a> is a brief written for agents rather than people: the install command per ecosystem, where <code>init()</code> belongs, the eleven framework hooks and how to choose one, the environment variables, and the smoke test to finish on. Copy <a class="link" href="#agent">the prompt above</a> into Claude Code, Cursor or Codex and it does the wiring and proves it worked.</p></div>
       </details>
-      <details class="rise">
-        <summary>What happens if Slack goes down?</summary>
-        <p>You lose alerts, never requests. Delivery happens on a worker thread behind a
-          bounded queue, retries twice, and never raises into your application. If the
-          queue fills, blare drops alerts and counts the drops rather than applying
-          back-pressure to production traffic.</p>
+      <details>
+        <summary>Is this a Sentry alternative?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p>No, and it is worth being precise. Sentry captures, stores, searches and displays errors. blare captures and notifies, then forgets. If you want to investigate a failure next week, you want Sentry, GlitchTip or Bugsink. If you want your team to find out in Slack within seconds without running any infrastructure, you want blare. Plenty of teams would reasonably run both.</p></div>
       </details>
-      <details class="rise">
-        <summary>Will it leak secrets into my chat channel?</summary>
-        <p>It is built not to. Request bodies, local variables, query strings and
-          environment variables are never collected at all. Everything that does leave is
-          scanned for bearer tokens, JWTs, AWS keys, GitHub and Slack tokens, private keys,
-          URL passwords and card numbers, and keys named <code>password</code>,
-          <code>token</code> or <code>secret</code> are replaced wholesale.</p>
+      <details>
+        <summary>Does it need Redis or a database?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p>No. Dedupe state defaults to a single lock-guarded file in the OS temp directory, which is enough for every process on one host — four Gunicorn workers seeing one crash send one alert. Point <code>BLARE_STATE</code> at a Redis URL only when you run several hosts and want them to deduplicate together. (Redis is implemented in the Python port; the Node port falls back to the file and says so.)</p></div>
       </details>
-      <details class="rise">
-        <summary>Why are the Python and npm package names different?</summary>
-        <p>npm's typosquatting filter refuses the unscoped name <code>blare</code> and the
-          <code>@blare</code> scope belongs to someone else, so npm gets
-          <code>@geekvb/blare</code> while PyPI keeps <code>blare</code>. Same project,
-          same spec version, same conformance fixtures.</p>
+      <details>
+        <summary>What happens if Slack goes down?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p>You lose alerts, never requests. Delivery happens on a worker thread behind a bounded queue, retries twice, and never raises into your application. If the queue fills, blare drops alerts and counts the drops rather than applying back-pressure to production traffic.</p></div>
+      </details>
+      <details>
+        <summary>Will it leak secrets into my chat channel?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p>It is built not to. Request bodies, local variables, query strings and environment variables are never collected at all. Everything that does leave is scanned for bearer tokens, JWTs, AWS keys, GitHub and Slack tokens, private keys, URL passwords and card numbers, and keys named <code>password</code>, <code>token</code>, <code>secret</code> and similar are replaced wholesale. There is a live demonstration <a class="link" href="#privacy">above</a>, and the rules are in <a class="link" href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md#6-privacy-and-redaction" target="_blank" rel="noopener">SPEC.md section 6</a>.</p></div>
+      </details>
+      <details>
+        <summary>Why are the Python and npm package names different?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p>npm's typosquatting filter refuses the unscoped name <code>blare</code> (too close to <code>base</code>, <code>brace</code>, <code>slate</code>) and <code>blarejs</code> (one character from <code>blakejs</code>), and the <code>@blare</code> scope belongs to someone else. So npm gets <code>@geekvb/blare</code> and PyPI keeps <code>blare</code>. Same project, same spec version, same conformance fixtures.</p></div>
+      </details>
+      <details>
+        <summary>What does it cost, and what does it send home?<svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></summary>
+        <div class="ans"><p>Nothing and nothing. Apache-2.0, no account, no API key, no telemetry, no hosted component. Your alerts go from your process to your webhook URL and nowhere else.</p></div>
       </details>
     </div>
   </div>
 </section>
 
-<section aria-labelledby="cta-h">
+<!-- ============================ cta ============================ -->
+<section class="cta" aria-labelledby="cta-h">
   <div class="wrap">
-    <div class="cta-box rise">
-      <h2 id="cta-h">Alert in one line</h2>
-      <p>Install it, set one environment variable, and confirm it works before you need
-        it with <code>python -m blare --send</code>.</p>
-      <div class="actions">
-        <a class="btn btn-1" href="https://github.com/D4RKGEEK/blare">Read it on GitHub</a>
-        <a class="btn btn-2" href="https://pypi.org/project/blare/">PyPI</a>
-        <a class="btn btn-2" href="https://www.npmjs.com/package/@geekvb/blare">npm</a>
-      </div>
+    <h2 id="cta-h">Two lines, then one environment variable.</h2>
+    <p class="lede" style="max-width:52ch">Install it, point <code>BLARE_SINKS</code> at your channel, and run the smoke test before you need it.</p>
+    <div class="cta-actions">
+      <a class="btn btn-primary btn-lg" href="https://github.com/D4RKGEEK/blare" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38v-1.33c-2.23.49-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.05-.49.05-.49.81.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .66-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        Star it on GitHub
+      </a>
+      <button class="btn btn-lg" data-copy="pip install blare">Copy <span class="mono" style="font-size:13px">pip install blare</span></button>
+      <button class="btn btn-lg" data-copy="npm i @geekvb/blare">Copy <span class="mono" style="font-size:13px">npm i @geekvb/blare</span></button>
     </div>
+    <p class="small fg-3 mt-24">Verify it works before you need it: <code>python -m blare --send</code> · <code>npx @geekvb/blare --send</code></p>
   </div>
 </section>
 
@@ -585,135 +1346,681 @@ export { onRequestError } from "@geekvb/blare/next";</code></pre>
 
 <footer>
   <div class="wrap">
-    <div class="foot">
-      <div>
-        <a class="brand" href="/blare/" style="margin-bottom:14px">
-          <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true"><circle cx="21" cy="32" r="6" fill="#fff"/><path d="M33 20.5a17 17 0 0 1 0 23" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="M45 12a29 29 0 0 1 0 40" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round" opacity=".45"/></svg></span>
+    <div class="foot-grid">
+      <div class="foot-col" style="max-width:280px">
+        <a class="brand" href="/blare/" style="margin-bottom:10px">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="15" fill="#17171A"/>
+            <circle cx="21" cy="32" r="6" fill="#F1B24A"/>
+            <path d="M33 20.5a17 17 0 0 1 0 23" stroke="#EDEDEF" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+            <path d="M45 12a29 29 0 0 1 0 40" stroke="#EDEDEF" stroke-width="6.5" fill="none" stroke-linecap="round" opacity=".4"/>
+          </svg>
           blare
         </a>
-        <p style="color:var(--ink-3);font-size:15px;max-width:34ch">
-          Production failures, in the channel you already watch. Apache-2.0,
-          implementing specification version 1.
-        </p>
+        <p class="small fg-3">Capture, grouping and delivery, as a library. Apache-2.0.</p>
       </div>
-      <div>
-        <h4>Install</h4>
-        <a href="https://pypi.org/project/blare/">PyPI · blare</a>
-        <a href="https://www.npmjs.com/package/@geekvb/blare">npm · @geekvb/blare</a>
-        <a href="https://github.com/D4RKGEEK/blare#quickstart">Quickstart</a>
+      <div class="foot-col">
+        <h4>Packages</h4>
+        <a href="https://pypi.org/project/blare/" target="_blank" rel="noopener">blare on PyPI</a>
+        <a href="https://www.npmjs.com/package/@geekvb/blare" target="_blank" rel="noopener">@geekvb/blare on npm</a>
       </div>
-      <div>
-        <h4>Behaviour</h4>
-        <a href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md">The spec</a>
-        <a href="https://github.com/D4RKGEEK/blare/tree/main/conformance">Conformance fixtures</a>
-        <a href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md#6-privacy-and-redaction">Redaction rules</a>
-      </div>
-      <div>
+      <div class="foot-col">
         <h4>Project</h4>
-        <a href="https://github.com/D4RKGEEK/blare">GitHub</a>
-        <a href="https://github.com/D4RKGEEK/blare/blob/main/CONTRIBUTING.md">Contributing</a>
-        <a href="https://github.com/D4RKGEEK/blare/issues">Issues</a>
+        <a href="https://github.com/D4RKGEEK/blare" target="_blank" rel="noopener">Source</a>
+        <a href="https://github.com/D4RKGEEK/blare/blob/main/SPEC.md" target="_blank" rel="noopener">SPEC.md</a>
+        <a href="https://github.com/D4RKGEEK/blare/tree/main/conformance" target="_blank" rel="noopener">Conformance fixtures</a>
+        <a href="https://github.com/D4RKGEEK/blare/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
+        <a href="https://github.com/D4RKGEEK/blare/issues" target="_blank" rel="noopener">Issues</a>
+      </div>
+      <div class="foot-col">
+        <h4>On this page</h4>
+        <a href="#how">How it works</a>
+        <a href="#fingerprint">Fingerprinting</a>
+        <a href="#agent">Wire it with an agent</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#config">Configuration</a>
+      </div>
+      <div class="foot-col">
+        <h4>For agents</h4>
+        <a href="llms.txt">llms.txt</a>
+        <a href="sitemap.xml">sitemap.xml</a>
       </div>
     </div>
-    <div class="foot-note">
-      <span>Apache-2.0. Use it, fork it, port it.</span>
-      <span>v0.1.0 · spec v1</span>
+
+    <div class="foot-end">
+      <span>blare contributors · Apache-2.0 · v0.1.0</span>
+      <span>No telemetry. No account. No hosted component.</span>
     </div>
+
+    <p class="kw">Python Slack error notifications · Node.js error alerts · Discord error webhook · Microsoft Teams alerts · FastAPI error monitoring · Django Slack alerts · Express error handler Slack · error deduplication · serverless error alerting · pino transport Slack · winston Slack transport · Celery error alerts</p>
   </div>
 </footer>
 
-<script>
-(function(){
-  "use strict";
+<div class="toast" id="toast" role="status" aria-live="polite" data-state="closed"></div>
 
-  /* Install tabs */
-  var tabs = [document.getElementById("tab-py"), document.getElementById("tab-js")];
-  var panels = [document.getElementById("panel-py"), document.getElementById("panel-js")];
-  tabs.forEach(function(tab, index){
-    if (!tab) return;
-    tab.addEventListener("click", function(){
-      tabs.forEach(function(t, i){
-        t.setAttribute("aria-selected", String(i === index));
-        panels[i].hidden = i !== index;
-      });
-    });
+<script>
+(() => {
+  "use strict";
+  const $  = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* version shields are decorative: drop the slot if one cannot load */
+  $$(".pkg-ver img").forEach(img => {
+    const drop = () => { const s = img.closest(".pkg-ver"); if(s) s.hidden = true; };
+    img.addEventListener("error", drop);
+    if(img.complete && img.naturalWidth === 0) drop();
   });
 
-  /* Entrances */
-  var risers = document.querySelectorAll(".rise");
-  if (!("IntersectionObserver" in window)) {
-    Array.prototype.forEach.call(risers, function(el){ el.classList.add("in"); });
-  } else {
-    var seen = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if (!entry.isIntersecting) return;
-        var siblings = Array.prototype.slice.call(
-          entry.target.parentNode.querySelectorAll(":scope > .rise"));
-        var index = Math.max(0, siblings.indexOf(entry.target));
-        entry.target.style.transitionDelay = Math.min(index * 70, 420) + "ms";
-        entry.target.classList.add("in");
-        seen.unobserve(entry.target);
-      });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
-    Array.prototype.forEach.call(risers, function(el){ seen.observe(el); });
+  /* ---------------- toast + copy ---------------- */
+  const toast = $("#toast");
+  let toastT;
+  function say(msg){
+    if(!toast) return;
+    toast.textContent = msg;
+    toast.dataset.state = "open";
+    clearTimeout(toastT);
+    toastT = setTimeout(() => { toast.dataset.state = "closed"; }, 1800);
+  }
+  async function copy(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      say("Copied");
+    }catch{
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly","");
+      ta.style.cssText = "position:fixed;left:-9999px";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); say("Copied"); }
+      catch{ say("Press ⌘C to copy"); }
+      ta.remove();
+    }
+  }
+  document.addEventListener("click", (e) => {
+    const direct = e.target.closest("[data-copy]");
+    if(direct){ copy(direct.getAttribute("data-copy")); return; }
+    const tgt = e.target.closest("[data-copy-target]");
+    if(tgt){
+      const el = document.getElementById(tgt.getAttribute("data-copy-target"));
+      if(el) copy(el.innerText.trim());
+    }
+  });
+
+  /* ---------------- segmented controls ---------------- */
+  function segment(root, onPick){
+    const btns = $$("button", root);
+    btns.forEach(b => b.addEventListener("click", () => {
+      btns.forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+      onPick(b);
+    }));
   }
 
-  /* The live thing: the same five minutes, with blare off and on. */
-  var toggle = document.getElementById("toggle");
-  var rows = document.getElementById("rows");
-  var readout = document.getElementById("readout");
-  if (!toggle || !rows || !readout) return;
+  /* ---------------- hero install switcher ---------------- */
+  const INSTALL = {
+    py: `<span class="tok-c"># 1 · install</span>
+pip install blare
 
-  var tidyMarkup = rows.innerHTML;
-  var flooded = false;
-  var timer = null;
+<span class="tok-c"># 2 · two lines in your entry point</span>
+<span class="tok-k">import</span> blare
+blare.<span class="tok-f">init</span>()
 
-  function floodRow(n){
-    return '<button class="row" type="button" tabindex="-1" aria-hidden="true">' +
-      '<span class="row-name">OperationalError: connection pool exhausted</span>' +
-      '<span class="row-meta"><span class="tag">message ' + n + '</span></span></button>';
+<span class="tok-c"># 3 · one environment variable</span>
+<span class="tok-n">BLARE_SINKS</span>=https://hooks.slack.com/services/T000/B000/xxxx
+<span class="tok-n">BLARE_ENV</span>=production
+
+<span class="tok-c"># 4 · prove it before you need it</span>
+python -m blare --send`,
+    js: `<span class="tok-c">// 1 · install</span>
+npm i @geekvb/blare
+
+<span class="tok-c">// 2 · two lines in your entry point</span>
+<span class="tok-k">import</span> blare <span class="tok-k">from</span> <span class="tok-s">"@geekvb/blare"</span>;
+blare.<span class="tok-f">init</span>();
+
+<span class="tok-c">// 3 · one environment variable</span>
+<span class="tok-n">BLARE_SINKS</span>=https://discord.com/api/webhooks/000/xxxx
+<span class="tok-n">BLARE_ENV</span>=production
+
+<span class="tok-c">// 4 · prove it before you need it</span>
+npx @geekvb/blare --send`
+  };
+  const installCode = $("#install-code code");
+  if(installCode){
+    installCode.innerHTML = INSTALL.py;
+    segment($('.install .seg'), b => { installCode.innerHTML = INSTALL[b.dataset.lang]; });
   }
 
-  function stop(){ if (timer) { clearInterval(timer); timer = null; } }
+  /* ================= fingerprinting (the real rules, in miniature) ================= */
+  function normalise(msg){
+    return String(msg)
+      .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, "<uuid>")
+      .replace(/\b[\w.+-]+@[\w-]+\.[\w.]+\b/g, "<email>")
+      .replace(/\b[a-z][a-z0-9+.-]*:\/\/[^\s"')]+/gi, "<url>")
+      .replace(/(^|\s)(\/[\w.-]+){2,}\/?/g, "$1<path>")
+      .replace(/(["'])(?:(?!\1).){1,120}\1/g, "<str>")
+      .replace(/\b(?:0x)?[0-9a-f]{8,}\b/gi, "<hex>")
+      .replace(/\d+(?:\.\d+)*/g, "N");
+  }
+  function hash16(str){
+    // two interleaved FNV-1a 32-bit passes -> 16 hex chars
+    let a = 0x811c9dc5, b = 0x01000193;
+    for(let i = 0; i < str.length; i++){
+      a ^= str.charCodeAt(i); a = Math.imul(a, 0x01000193) >>> 0;
+      b ^= str.charCodeAt(str.length - 1 - i); b = Math.imul(b, 0x85ebca6b) >>> 0;
+    }
+    return (a >>> 0).toString(16).padStart(8, "0") + (b >>> 0).toString(16).padStart(8, "0");
+  }
+  const fingerprint = (type, frame, msg) => hash16(`${type}|${frame}|${normalise(msg)}`);
 
-  function flood(){
-    stop();
-    rows.classList.add("flood");
-    rows.innerHTML = "";
-    var n = 0;
-    var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    function add(){
-      n += reduced ? 16 : 1;
-      if (n > 847) n = 847;
-      rows.insertAdjacentHTML("beforeend", floodRow(n));
-      while (rows.children.length > 9) rows.removeChild(rows.firstChild);
-      readout.innerHTML = "The same five minutes, without blare: <b>" + n +
-        "</b> identical messages and counting. This is the channel everybody mutes.";
-      if (n >= 847) {
-        stop();
-        readout.innerHTML = "The same five minutes, without blare: <b>847</b> identical " +
-          "messages. This is the channel everybody mutes.";
+  /* ================= the stage: two channels, one outage ================= */
+  const FAILS = [
+    { n: 612, type: "OperationalError", msg: "connection pool exhausted (size 5, overflow 10)",
+      frame: "app/payments.py:142 in charge", svc: "checkout-api", short: "OperationalError: connection pool exhausted (size 5, overflow 10)" },
+    { n: 198, type: "TypeError", msg: "Cannot read properties of undefined (reading 'total')",
+      frame: "src/cart.tsx:88 in CartSummary", svc: "web", short: "TypeError: Cannot read properties of undefined (reading 'total')" },
+    { n:  37, type: "GatewayTimeout", msg: "payments-gateway timed out after 30.0s",
+      frame: "app/gateway.py:64 in call", svc: "checkout-api", short: "GatewayTimeout: payments-gateway timed out after 30.0s" }
+  ];
+  FAILS.forEach(f => { f.fp = fingerprint(f.type, f.frame, f.msg); });
+  // the page was written with a placeholder hash; replace every printed copy with
+  // the one this page actually computes, so no two places disagree.
+  const FP_PLACEHOLDER = "7c1e4f09a2b85d33";
+  const FP0 = FAILS[0].fp;
+  function unifyFingerprint(root){
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    const hits = [];
+    let node;
+    while((node = w.nextNode())) if(node.nodeValue.indexOf(FP_PLACEHOLDER) !== -1) hits.push(node);
+    hits.forEach(t => { t.nodeValue = t.nodeValue.split(FP_PLACEHOLDER).join(FP0); });
+  }
+  const TOTAL = FAILS.reduce((s,f) => s + f.n, 0);
+
+  // a deterministic interleave, so the demo reads the same every time
+  const QUEUE = (() => {
+    const q = [];
+    let seed = 1337;
+    const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    const left = FAILS.map(f => f.n);
+    for(let i = 0; i < TOTAL; i++){
+      let r = rnd() * left.reduce((s,n) => s+n, 0), k = 0;
+      while(r > left[k]){ r -= left[k]; k++; }
+      left[k]--; q.push(k);
+    }
+    return q;
+  })();
+
+  const rawFeed = $("#raw-feed"), blareFeed = $("#blare-feed");
+  const rawCount = $("#raw-count"), blareCount = $("#blare-count");
+  const scoreRaw = $("#score-raw"), scoreBlare = $("#score-blare"), scoreSup = $("#score-sup");
+  const rawFoot = $("#raw-foot"), blareFoot = $("#blare-foot");
+  const fireBtn = $("#fire"), resetBtn = $("#reset");
+
+  const RAW_DOM_CAP = 55;
+  const clock = new Date("2026-11-07T10:04:00Z");
+  const hhmm = (offsetMs) => {
+    const d = new Date(clock.getTime() + offsetMs);
+    return `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`;
+  };
+  const nf = new Intl.NumberFormat("en-US");
+
+  let state = null, raf = 0, muteShown = false;
+
+  function resetStage(){
+    cancelAnimationFrame(raf);
+    state = { i: 0, raw: 0, sent: 0, suppressed: 0, alerts: new Map(), t0: 0 };
+    muteShown = false;
+    rawFeed.innerHTML = `<p class="small fg-3" style="padding:4px 2px">Empty. This is the channel with a plain webhook call in the error handler.</p>`;
+    blareFeed.innerHTML = `<p class="small fg-3" style="padding:4px 2px">Empty. Same incident, same webhook, blare in front of it.</p>`;
+    rawCount.textContent = "0 messages";
+    blareCount.textContent = "0 messages";
+    scoreRaw.textContent = "0"; scoreBlare.textContent = "0"; scoreSup.textContent = "0";
+    rawFoot.innerHTML = `A webhook call in an <code>except</code> block. One message per crash.`;
+    blareFoot.innerHTML = `Fingerprinted, deduped in a 5-minute window, capped at 20 an hour.`;
+    fireBtn.disabled = false;
+    fireBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.5c2.2 2.2 4.5 3.9 4.5 7a4.5 4.5 0 0 1-9 0c0-1.5.6-2.6 1.5-3.7.2 1 .7 1.7 1.4 2 .3-2 .8-3.6 1.6-5.3Z"/></svg> Fire ${nf.format(TOTAL)} errors`;
+  }
+
+  function rawMessage(f, idx){
+    const el = document.createElement("div");
+    el.className = "msg" + (reduced ? "" : " in");
+    el.innerHTML =
+      `<span class="av bot">AL</span>` +
+      `<div class="grow"><div class="hstack gap-8"><span class="who">alerts</span><span class="ts">${hhmm(idx * 420)}</span></div>` +
+      `<div class="txt">🔴 ${f.short} — ${f.svc}/production — ${f.frame}</div></div>`;
+    return el;
+  }
+
+  function alertCard(f, count, suppressedHour){
+    return `<div class="alert" data-fp="${f.fp}">
+      <div class="ttl"><span class="sev">●</span><span>${f.type}: ${f.msg}</span></div>
+      <div class="sub"><span>${f.svc} · production</span><span class="fg-3">—</span><span class="b" data-count>${nf.format(count)} times</span><span>in the last 5 min</span></div>
+      <div class="where">${f.frame}</div>
+      <div class="fields">
+        <div class="fld"><div class="k">Fingerprint</div><div class="v">${f.fp}</div></div>
+        <div class="fld"><div class="k">First seen</div><div class="v">${hhmm(0)} UTC</div></div>
+        <div class="fld"><div class="k">Suppressed</div><div class="v" data-sup>${nf.format(Math.max(0, count - 1))} in window</div></div>
+        <div class="fld"><div class="k">Hour budget</div><div class="v">${suppressedHour} of 20 used</div></div>
+      </div>
+      <div class="acts"><span>Open runbook</span><span>Silence 1h</span><span>Copy fingerprint</span></div>
+    </div>`;
+  }
+
+  function tick(ts){
+    if(!state.t0) state.t0 = ts;
+    const target = Math.min(TOTAL, Math.round(((ts - state.t0) / 3600) * TOTAL));
+    let moved = false;
+
+    while(state.i < target){
+      const f = FAILS[QUEUE[state.i]];
+      const idx = state.i;
+      state.i++; state.raw++;
+
+      // --- the naive channel: one message, every time
+      if(state.raw === 1) rawFeed.innerHTML = "";
+      rawFeed.appendChild(rawMessage(f, idx));
+      while(rawFeed.children.length > RAW_DOM_CAP) rawFeed.removeChild(rawFeed.firstChild);
+      rawFeed.scrollTop = rawFeed.scrollHeight;
+
+      // --- blare: fingerprint, then decide
+      if(!state.alerts.has(f.fp)){
+        if(state.sent === 0) blareFeed.innerHTML = "";
+        state.sent++;
+        const wrap = document.createElement("div");
+        wrap.className = "msg" + (reduced ? "" : " in");
+        wrap.innerHTML = `<span class="av bot">BL</span><div class="grow"><div class="hstack gap-8"><span class="who">blare</span><span class="ts">${hhmm(idx*420)}</span><span class="tag ok" style="height:18px">new problem</span></div>${alertCard(f, 1, state.sent)}</div>`;
+        blareFeed.appendChild(wrap);
+        state.alerts.set(f.fp, { node: wrap, count: 1 });
+      }else{
+        const a = state.alerts.get(f.fp);
+        a.count++; state.suppressed++;
+        const c = a.node.querySelector("[data-count]");
+        const s = a.node.querySelector("[data-sup]");
+        if(c) c.textContent = `${nf.format(a.count)} times`;
+        if(s) s.textContent = `${nf.format(a.count - 1)} in window`;
+      }
+      moved = true;
+
+      if(state.raw > 42 && !muteShown){
+        muteShown = true;
+        const note = document.createElement("div");
+        note.className = "muted-note";
+        note.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a4 4 0 0 0-4 4v3L2.5 10.5h11L12 8V5a4 4 0 0 0-4-4Zm0 14a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2Z"/></svg> Someone muted #alerts at ${hhmm(42*420)}.`;
+        rawFeed.appendChild(note);
       }
     }
-    add();
-    timer = setInterval(add, reduced ? 110 : 26);
+
+    if(moved){
+      rawCount.textContent = `${nf.format(state.raw)} messages`;
+      blareCount.textContent = `${nf.format(state.sent)} message${state.sent === 1 ? "" : "s"}`;
+      scoreRaw.textContent = nf.format(state.raw);
+      scoreBlare.textContent = nf.format(state.sent);
+      scoreSup.textContent = nf.format(state.suppressed);
+    }
+
+    if(state.i < TOTAL){
+      raf = requestAnimationFrame(tick);
+    }else{
+      fireBtn.disabled = true;
+      fireBtn.innerHTML = `${nf.format(TOTAL)} fired`;
+      rawFoot.innerHTML = `<span class="c-bad">${nf.format(state.raw)} messages, 3 problems.</span> This is why that channel is muted today.`;
+      blareFoot.innerHTML = `<span class="c-ok">${nf.format(state.sent)} messages, 3 problems.</span> ${nf.format(state.suppressed)} suppressed and counted — nothing hidden, nothing lost.`;
+      $$(".alert", blareFeed).forEach(a => { if(!reduced) a.classList.add("bump"); });
+    }
   }
 
-  function tidyUp(){
-    stop();
-    rows.classList.remove("flood");
-    rows.innerHTML = tidyMarkup;
-    readout.innerHTML = "Six real problems, one message each. " +
-      "<b>Press the button</b> to see the same five minutes without blare.";
+  if(fireBtn){
+    resetStage();
+    fireBtn.addEventListener("click", () => {
+      if(state.i > 0) resetStage();
+      fireBtn.disabled = true;
+      fireBtn.textContent = "Firing…";
+      if(reduced){
+        // no animation: jump straight to the outcome
+        state.t0 = -1e9; tick(0);
+      }else{
+        state.t0 = 0; raf = requestAnimationFrame(tick);
+      }
+    });
+    resetBtn.addEventListener("click", resetStage);
   }
 
-  toggle.addEventListener("click", function(){
-    flooded = !flooded;
-    toggle.textContent = flooded ? "Turn blare on" : "Turn blare off";
-    toggle.setAttribute("aria-pressed", String(flooded));
-    if (flooded) flood(); else tidyUp();
+  /* ================= pipeline stages ================= */
+  const stageTabs = $$("#stage-tabs .step");
+  function pickStage(btn){
+    stageTabs.forEach(t => t.setAttribute("aria-selected", String(t === btn)));
+    const stage = btn.dataset.stage;
+    $$("[role='tabpanel'][id^='sp-']").forEach(p => { p.hidden = p.id !== `sp-${stage}`; });
+    $$(".diagram .dnode").forEach(n => {
+      const on = n.dataset.stage === stage;
+      $$("rect", n).forEach(r => {
+        r.setAttribute("fill", on ? "#1E1E22" : (r.getAttribute("height") === "52" ? "#17171A" : "#111113"));
+        r.setAttribute("stroke", on ? "#4C8DFF" : "rgba(255,255,255,.10)");
+      });
+    });
+  }
+  stageTabs.forEach(t => {
+    t.addEventListener("click", () => pickStage(t));
+    t.addEventListener("keydown", (e) => {
+      const i = stageTabs.indexOf(t);
+      if(e.key === "ArrowDown" || e.key === "ArrowRight"){ e.preventDefault(); const n = stageTabs[(i+1)%stageTabs.length]; n.focus(); pickStage(n); }
+      if(e.key === "ArrowUp" || e.key === "ArrowLeft"){ e.preventDefault(); const n = stageTabs[(i-1+stageTabs.length)%stageTabs.length]; n.focus(); pickStage(n); }
+    });
   });
+  if(stageTabs.length) pickStage(stageTabs[0]);
+
+  /* ================= fingerprint lab ================= */
+  const fpRows = $("#fp-rows"), fpOut = $("#fp-out");
+  function runLab(){
+    if(!fpRows) return;
+    const rows = $$(".fp-row", fpRows);
+    const groups = new Map();
+    const letters = ["a","b","c","d"];
+    rows.forEach(r => {
+      const v = $("input", r).value;
+      const n = normalise(v);
+      const h = hash16(`ValueError|app/users.py:88|${n}`);
+      if(!groups.has(h)) groups.set(h, { n, count: 0, letter: null });
+      groups.get(h).count++;
+      r._fp = h; r._n = n;
+    });
+    // a colour means "these share a fingerprint", so only groups that actually
+    // collapse get one; a line that is its own problem stays neutral.
+    let li = 0;
+    groups.forEach(g => { if(g.count > 1 && li < letters.length) g.letter = letters[li++]; });
+    rows.forEach(r => {
+      const g = groups.get(r._fp);
+      if(g.letter) r.dataset.group = g.letter; else r.removeAttribute("data-group");
+      $(".h", r).textContent = r._fp.slice(0, 12);
+      r.title = `normalised: ${r._n}`;
+    });
+    const dups = Array.from(groups.values()).filter(g => g.count > 1);
+    const alerts = groups.size;
+    fpOut.innerHTML =
+      `<b>${rows.length} messages → ${alerts} fingerprint${alerts===1?"":"s"} → ${alerts} alert${alerts===1?"":"s"}.</b> ` +
+      (dups.length
+        ? `${dups.length} group${dups.length===1?"":"s"} collapsed, ${rows.length - alerts} message${rows.length-alerts===1?"":"s"} suppressed and counted.`
+        : `Every line is a distinct problem, so every line alerts.`) +
+      `<div class="norm">${Array.from(groups.values()).map(g => `<div>${g.letter === "a" ? "" : ""}${escapeHtml(g.n).replace(/(&lt;\w+&gt;|\bN\b)/g, "<mark>$1</mark>")}</div>`).join("")}</div>`;
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+  if(fpRows){
+    fpRows.addEventListener("input", runLab);
+    runLab();
+  }
+
+  /* ================= sinks ================= */
+  const CANON = {
+    fingerprint: FP0,
+    level: "error",
+    type: "OperationalError",
+    message: "connection pool exhausted (size 5, overflow 10)",
+    service: "checkout-api",
+    environment: "production",
+    culprit: "app/payments.py:142 in charge",
+    count: 847,
+    window_seconds: 300,
+    dropped_by_ceiling: 0,
+    first_seen: "2026-11-07T10:04:00Z",
+    last_seen: "2026-11-07T10:08:51Z",
+    runtime: { language: "python", version: "3.12.4" },
+    spec_version: 1
+  };
+  const SINKS = {
+    slack: {
+      url: "POST https://hooks.slack.com/services/T000/B000/xxxx",
+      note: "Detected from hooks.slack.com. Rendered as Block Kit: a section with the problem, context for service, environment and count, and the culprit as mono.",
+      render: `<div class="render slack">
+        <h4>🔴 OperationalError: connection pool exhausted (size 5, overflow 10)</h4>
+        <div class="row"><b>checkout-api · production</b> — <b>847 times</b> in the last 5 min</div>
+        <div class="row mono">app/payments.py:142 in charge</div>
+        <div class="row mono">fingerprint 7c1e4f09a2b85d33 · python 3.12.4</div>
+      </div>`,
+      payload: `{
+  "blocks": [
+    { "type": "section",
+      "text": { "type": "mrkdwn",
+                "text": "🔴 *OperationalError: connection pool exhausted (size 5, overflow 10)*" } },
+    { "type": "context",
+      "elements": [
+        { "type": "mrkdwn", "text": "*checkout-api* · production" },
+        { "type": "mrkdwn", "text": "*847 times* in the last 5 min" }
+      ] },
+    { "type": "section",
+      "text": { "type": "mrkdwn", "text": "\`app/payments.py:142 in charge\`" } },
+    { "type": "context",
+      "elements": [ { "type": "mrkdwn", "text": "fingerprint \`7c1e4f09a2b85d33\` · python 3.12.4" } ] }
+  ]
+}`
+    },
+    discord: {
+      url: "POST https://discord.com/api/webhooks/000000/xxxx",
+      note: "Detected from discord.com. Rendered as an embed with a red colour bar, inline fields and the culprit in a code block.",
+      render: `<div class="render discord">
+        <h4>OperationalError: connection pool exhausted (size 5, overflow 10)</h4>
+        <div class="row">checkout-api · production</div>
+        <div class="row"><b>847 times</b> in the last 5 min</div>
+        <div class="row mono">app/payments.py:142 in charge</div>
+      </div>`,
+      payload: `{
+  "embeds": [{
+    "title": "OperationalError",
+    "description": "connection pool exhausted (size 5, overflow 10)",
+    "color": 15881050,
+    "fields": [
+      { "name": "Service",     "value": "checkout-api", "inline": true },
+      { "name": "Environment", "value": "production",   "inline": true },
+      { "name": "Occurrences", "value": "847 in 5 min", "inline": true },
+      { "name": "Culprit",     "value": "\`\`\`app/payments.py:142 in charge\`\`\`" }
+    ],
+    "footer": { "text": "fingerprint 7c1e4f09a2b85d33" },
+    "timestamp": "2026-11-07T10:08:51Z"
+  }]
+}`
+    },
+    teams: {
+      url: "POST https://acme.webhook.office.com/webhookb2/…",
+      note: "Teams has two incompatible webhook formats and blare chooses from the URL: an Adaptive Card for Workflows endpoints, the legacy MessageCard for the retired Office connectors.",
+      render: `<div class="render teams">
+        <h4>OperationalError: connection pool exhausted (size 5, overflow 10)</h4>
+        <div class="row">checkout-api · production · 847 times in the last 5 min</div>
+        <div class="row mono">app/payments.py:142 in charge</div>
+      </div>`,
+      payload: `{
+  "type": "message",
+  "attachments": [{
+    "contentType": "application/vnd.microsoft.card.adaptive",
+    "content": {
+      "type": "AdaptiveCard",
+      "version": "1.4",
+      "body": [
+        { "type": "TextBlock", "weight": "Bolder", "wrap": true,
+          "text": "OperationalError: connection pool exhausted (size 5, overflow 10)" },
+        { "type": "FactSet", "facts": [
+          { "title": "Service",     "value": "checkout-api" },
+          { "title": "Environment", "value": "production" },
+          { "title": "Occurrences", "value": "847 in 5 min" },
+          { "title": "Culprit",     "value": "app/payments.py:142 in charge" }
+        ] }
+      ]
+    }
+  }]
+}`
+    },
+    generic: {
+      url: "POST https://your-relay.internal/blare",
+      note: "Anything that is not a known chat host gets the canonical event unchanged, so PagerDuty, n8n, a Lambda, your own relay or your agent's endpoint all work today without blare knowing about them.",
+      render: `<div class="render">
+        <h4>The canonical event, verbatim</h4>
+        <div class="row">One stable JSON shape, versioned by <span class="mono">spec_version</span>. Identical from every port.</div>
+        <div class="row mono">content-type: application/json</div>
+      </div>`,
+      payload: JSON.stringify(CANON, null, 2)
+    },
+    console: {
+      url: "stderr",
+      note: "For local development: no webhook, no network. Set BLARE_DRY_RUN=true to render to stderr while sending nothing, which is also how you check a first deploy safely.",
+      render: `<div class="render">
+        <h4>Local, with no webhook at all</h4>
+        <div class="row mono">BLARE_DRY_RUN=true</div>
+        <div class="row">Exactly what would have been sent, printed instead of posted.</div>
+      </div>`,
+      payload: `blare  ERROR  checkout-api/production
+  OperationalError: connection pool exhausted (size 5, overflow 10)
+  at app/payments.py:142 in charge
+  847 times in the last 5 min · fingerprint 7c1e4f09a2b85d33
+  would POST to 1 sink (dry run)`
+    }
+  };
+  const sinkRender = $("#sink-render"), sinkPayload = $("#sink-payload"), sinkUrl = $("#sink-url"), sinkNote = $("#sink-note");
+  const sinkTabs = $$("#sink-tabs .tab");
+  function pickSink(btn){
+    sinkTabs.forEach(t => t.setAttribute("aria-selected", String(t === btn)));
+    const d = SINKS[btn.dataset.sink];
+    sinkRender.innerHTML = d.render;
+    sinkPayload.textContent = d.payload;
+    sinkUrl.textContent = d.url;
+    sinkNote.textContent = d.note;
+    unifyFingerprint(sinkRender);
+    sinkPayload.textContent = sinkPayload.textContent.split(FP_PLACEHOLDER).join(FP0);
+  }
+  sinkTabs.forEach(t => {
+    t.addEventListener("click", () => pickSink(t));
+    t.addEventListener("keydown", (e) => {
+      const i = sinkTabs.indexOf(t);
+      if(e.key === "ArrowRight"){ e.preventDefault(); const n = sinkTabs[(i+1)%sinkTabs.length]; n.focus(); pickSink(n); }
+      if(e.key === "ArrowLeft"){ e.preventDefault(); const n = sinkTabs[(i-1+sinkTabs.length)%sinkTabs.length]; n.focus(); pickSink(n); }
+    });
+  });
+  if(sinkTabs.length) pickSink(sinkTabs[0]);
+  unifyFingerprint(document.body);
+
+  /* ================= agent prompts ================= */
+  const BRIEF = "https://d4rkgeek.github.io/blare/llms.txt";
+  const PROMPTS = {
+    claude: { w: "paste into Claude Code", hint: "Works the same in any terminal agent.",
+      text: `Read ${BRIEF} first, then wire blare into this repository.
+
+1. Work out the runtime and framework from the dependency files, not from guesses.
+2. Add the package: \`pip install blare\` (and to requirements/pyproject), or \`npm i @geekvb/blare\` (and to package.json).
+3. Call init() once, as early as the entry point allows — before the first import that can fail.
+4. Register the one framework hook that matches what you found. Do not add more than one.
+5. Add BLARE_SINKS and BLARE_ENV to .env.example and to the deployment config, with a placeholder URL.
+   Never put a real webhook URL in tracked code.
+6. Leave every existing logger.error call exactly as it is — blare captures them without changes.
+7. Finish by running the smoke test (\`python -m blare --send\` or \`npx @geekvb/blare --send\`)
+   and show me the output.
+
+Then tell me, in five lines: what you changed, which hook you chose and why, and the one
+environment variable I still have to set myself.` },
+    cursor: { w: "paste into Cursor chat", hint: "Add @Web so it can fetch the brief.",
+      text: `@Web ${BRIEF}
+
+Using that brief, add blare to this project:
+- detect the framework from the dependency file
+- install the package and pin it in the dependency file
+- call init() at the earliest point in the entry file
+- register exactly one framework hook
+- add BLARE_SINKS and BLARE_ENV to .env.example only, never to tracked code
+- do not touch existing logger.error calls
+
+Show me the diff before applying it, then run the --send smoke test.` },
+    generic: { w: "any coding agent", hint: "No blare-specific tooling needed.",
+      text: `Task: integrate blare, an error-alerting library, into this repository.
+
+Reference (fetch this first): ${BRIEF}
+Spec (only if you need exact behaviour): https://github.com/D4RKGEEK/blare/blob/main/SPEC.md
+
+Constraints:
+- Python -> package "blare"; Node/TypeScript -> package "@geekvb/blare".
+- init() is called once, at process start, before anything that can raise.
+- Exactly one framework hook, chosen from the dependency file.
+- Configuration is environment variables only: BLARE_SINKS (required), BLARE_ENV.
+  Put placeholders in .env.example. Never commit a webhook URL.
+- Do not modify existing logging calls; blare hooks the root logger.
+- Do not add a dashboard, a database, a background service or a second dependency.
+
+Done means: the app still starts, the smoke test posts one message, and the diff is
+under ~15 lines plus the dependency entry.` },
+    rules: { w: "AGENTS.md or .cursorrules", hint: "Commit this so every future agent gets it right.",
+      text: `## Error alerting (blare)
+
+This repo uses blare for error alerting. It is a library, not a service: there is no
+dashboard, no database and no API key.
+
+- Package: \`blare\` (PyPI) / \`@geekvb/blare\` (npm).
+- \`init()\` is called once at process start. Do not call it again per request or per worker.
+- There is exactly one framework hook registered. Do not add a second.
+- Configuration is environment variables only, documented in \`.env.example\`:
+  BLARE_SINKS (webhook URLs, comma separated) and BLARE_ENV.
+- Never commit a webhook URL. Never read BLARE_SINKS in application code.
+- Do not wrap application code in try/except just to report an error — blare already
+  captures \`logger.error\` calls and unhandled exceptions.
+- To silence a noisy known failure, add a glob to BLARE_IGNORE rather than deleting the log call.
+- Behaviour (fingerprinting, throttling, redaction, payloads) is specified in
+  ${BRIEF} and SPEC.md. If something looks wrong, read those before changing code.` }
+  };
+  const promptText = $("#prompt-text"), promptW = $("#prompt-w"), promptHint = $("#prompt-hint");
+  if(promptText){
+    const setPrompt = (k) => {
+      promptText.textContent = PROMPTS[k].text;
+      promptW.textContent = PROMPTS[k].w;
+      promptHint.textContent = PROMPTS[k].hint;
+    };
+    setPrompt("claude");
+    segment($(".prompt-head .seg"), b => setPrompt(b.dataset.agent));
+  }
+
+  /* ================= redaction demo ================= */
+  const RULES = [
+    // key-based first: a named key is replaced wholesale, value and all
+    [/((?:[\w.-]*[_.\-])?(?:password|passwd|pwd|token|secret|api[_-]?key|apikey|access[_-]?key|authorization|auth|cookie|session|private[_-]?key|client[_-]?secret)["']?\s*[:=]\s*)(?:(?:Bearer|Token|Basic|bearer|token|basic)\s+\S+|"[^"]*"|'[^']*'|[^\s,;}"']+)/gi, '$1<redacted>'],
+    [/\b(?:Bearer|bearer)\s+[A-Za-z0-9._~+\/-]{12,}=*/g, "Bearer <redacted>"],
+    [/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/g, "<jwt:redacted>"],
+    [/\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/g, "<aws-key:redacted>"],
+    [/\bgh[pousr]_[A-Za-z0-9]{16,}\b/g, "<github-token:redacted>"],
+    [/\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g, "<slack-token:redacted>"],
+    [/\bsk_(?:live|test)_[A-Za-z0-9]{16,}\b/g, "<api-key:redacted>"],
+    [/-----BEGIN (?:[A-Z ]+)PRIVATE KEY-----[\s\S]*?-----END (?:[A-Z ]+)PRIVATE KEY-----/g, "<private-key:redacted>"],
+    [/([a-z][a-z0-9+.-]*:\/\/[^\s:@\/]+):([^\s@\/]+)@/gi, "$1:<redacted>@"],
+    [/\b(?:\d[ -]?){13,19}\b/g, (m) => luhn(m) ? "<card:redacted>" : m],
+  ];
+  function luhn(s){
+    const d = s.replace(/\D/g, "");
+    if(d.length < 13 || d.length > 19) return false;
+    let sum = 0, alt = false;
+    for(let i = d.length - 1; i >= 0; i--){
+      let n = +d[i];
+      if(alt){ n *= 2; if(n > 9) n -= 9; }
+      sum += n; alt = !alt;
+    }
+    return sum % 10 === 0;
+  }
+  const rin = $("#redact-in"), rout = $("#redact-out");
+  function runRedact(){
+    let out = rin.value;
+    RULES.forEach(([re, rep]) => { out = out.replace(re, rep); });
+    rout.innerHTML = escapeHtml(out).replace(/&lt;[a-z:-]*redacted&gt;/g, (m) => `<s>${m}</s>`);
+  }
+  if(rin){ rin.addEventListener("input", runRedact); runRedact(); }
+
+  /* ================= nav: mark the section you're in ================= */
+  const links = $$(".nav-links a");
+  const targets = links.map(a => document.querySelector(a.getAttribute("href"))).filter(Boolean);
+  if("IntersectionObserver" in window && targets.length){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if(!en.isIntersecting) return;
+        links.forEach(a => {
+          const on = a.getAttribute("href") === `#${en.target.id}`;
+          a.style.color = on ? "var(--fg)" : "";
+          a.style.background = on ? "var(--bg-subtle)" : "";
+        });
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    targets.forEach(t => io.observe(t));
+  }
 })();
 </script>
+
 </body>
 </html>
