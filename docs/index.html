@@ -216,29 +216,16 @@ hr{border:0;border-top:1px solid var(--line);margin:0}
 .nav-links a:hover{color:var(--fg);background:var(--bg-subtle)}
 .nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 
-/* package pills in the header */
-.pkg{
-  display:inline-flex;align-items:stretch;border:1px solid var(--line-strong);
-  border-radius:var(--r-sm);background:var(--bg-raised);overflow:hidden;height:30px;
+/* package links in the header (the commands live in the hero) */
+.pkg-link{
+  display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;
+  border-radius:var(--r-sm);font-size:13px;font-weight:500;color:var(--fg-2);white-space:nowrap;
+  transition:color var(--t-fast) var(--ease),background var(--t-fast) var(--ease);
 }
-.pkg-mark{
-  display:flex;align-items:center;gap:6px;padding:0 9px;font-size:11.5px;font-weight:600;
-  color:var(--fg-2);background:var(--bg-subtle);border-right:1px solid var(--line);
-  letter-spacing:0;white-space:nowrap;
-}
-.pkg-mark svg{width:13px;height:13px}
-.pkg-cmd{
-  display:flex;align-items:center;gap:8px;padding:0 9px;font-family:var(--mono);
-  font-size:11.5px;color:var(--fg);background:none;border:0;cursor:pointer;white-space:nowrap;
-}
-.pkg-cmd:hover{background:var(--bg-subtle)}
-.pkg-cmd .ico{opacity:.55;flex:0 0 auto}
-.pkg-cmd:hover .ico{opacity:1}
-.pkg-ver{padding:0 9px;display:flex;align-items:center;font-family:var(--mono);font-size:11px;color:var(--fg-3);border-left:1px solid var(--line)}
-.pkg-ver:hover{color:var(--fg);background:var(--bg-subtle)}
-.pkg-ver[hidden]{display:none}
+.pkg-link:hover{color:var(--fg);background:var(--bg-subtle)}
+.pkg-link svg{width:15px;height:15px;flex:0 0 auto}
 @media (max-width:1320px){.nav-links{display:none}}
-@media (max-width:1060px){.pkg{display:none}}
+@media (max-width:1060px){.pkg-link{display:none}}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -301,7 +288,30 @@ hr{border:0;border-top:1px solid var(--line);margin:0}
 .hero-meta .sep{width:1px;height:12px;background:var(--line-strong)}
 
 /* install switcher */
-.install{margin-top:26px;max-width:560px;width:100%;min-width:0}
+.install{margin-top:22px;max-width:560px;width:100%;min-width:0}
+
+/* the two install commands, where people actually look for them */
+.inst{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:30px;max-width:560px}
+@media (max-width:560px){.inst{grid-template-columns:minmax(0,1fr)}}
+.inst-card{
+  display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;text-align:left;
+  background:var(--bg-raised);border:1px solid var(--line-strong);border-radius:var(--r-md);
+  font:inherit;color:inherit;cursor:pointer;
+  transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease);
+}
+.inst-card:hover{background:var(--bg-subtle);border-color:rgba(255,255,255,.2)}
+.inst-card:active{transform:translateY(1px)}
+.inst-card .ic{width:28px;height:28px;border-radius:var(--r-sm);background:var(--bg-muted);display:grid;place-items:center;flex:0 0 auto}
+.inst-card .ic svg{width:17px;height:17px}
+.inst-card .t{min-width:0;flex:1 1 auto}
+.inst-card .eco{display:block;font-size:11px;color:var(--fg-3);line-height:1.35}
+.inst-card .cmd{display:block;font-family:var(--mono);font-size:13.5px;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.inst-card .cp{color:var(--fg-3);flex:0 0 auto;display:flex}
+.inst-card:hover .cp{color:var(--fg)}
+.inst-note{font-size:12.5px;color:var(--fg-3);margin-top:10px}
+
+.next-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.next-head .t{font-size:13px;color:var(--fg-2)}
 .seg{display:inline-flex;padding:2px;gap:2px;background:var(--bg-subtle);border:1px solid var(--line);border-radius:var(--r-sm)}
 .seg button{
   height:26px;padding:0 11px;border:0;border-radius:var(--r-xs);background:none;color:var(--fg-3);
@@ -568,31 +578,14 @@ footer{border-top:1px solid var(--line);padding:40px 0 48px;background:var(--bg-
     </nav>
 
     <div class="nav-right">
-      <!-- package pills: PyPI and npm, live versions -->
-      <div class="pkg hide-sm">
-        <a class="pkg-mark" href="https://pypi.org/project/blare/" target="_blank" rel="noopener" title="blare on PyPI">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11.9 2c-1.6 0-3 .2-3.9.6-.9.4-1.3 1-1.3 1.8v2.2h5.2v.7H4.6c-1 0-1.8.5-2.3 1.6C1.8 10 1.7 11 1.7 12s.1 2 .5 3c.5 1.2 1.3 1.8 2.4 1.8h1.8v-2.6c0-1.2.5-2.1 1.5-2.7.8-.5 1.8-.7 3-.7h3.4c1 0 1.8-.3 2.4-.9.6-.6.9-1.4.9-2.3V4.4c0-.8-.5-1.4-1.4-1.8-.9-.4-2.2-.6-3.8-.6h-.5Zm-2.3 1.6c.4 0 .7.3.7.8s-.3.8-.7.8-.8-.3-.8-.8.4-.8.8-.8Z" fill="#4C8DFF"/><path d="M12.1 22c1.6 0 3-.2 3.9-.6.9-.4 1.3-1 1.3-1.8v-2.2h-5.2v-.7h7.3c1 0 1.8-.5 2.3-1.6.4-1.1.5-2.1.5-3.1s-.1-2-.5-3c-.5-1.2-1.3-1.8-2.4-1.8h-1.8v2.6c0 1.2-.5 2.1-1.5 2.7-.8.5-1.8.7-3 .7h-3.4c-1 0-1.8.3-2.4.9-.6.6-.9 1.4-.9 2.3v3.2c0 .8.5 1.4 1.4 1.8.9.4 2.2.6 3.8.6h.6Zm2.3-1.6c-.4 0-.7-.3-.7-.8s.3-.8.7-.8.8.3.8.8-.4.8-.8.8Z" fill="#F1B24A"/></svg>
-          PyPI
-        </a>
-        <button class="pkg-cmd" data-copy="pip install blare" title="Copy: pip install blare">
-          pip install blare
-          <svg class="ico" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
-        </button>
-        <a class="pkg-ver" href="https://pypi.org/project/blare/" target="_blank" rel="noopener"><img src="https://img.shields.io/pypi/v/blare?label=&amp;color=%2317171A&amp;labelColor=%2317171A&amp;style=flat-square" alt="blare version on PyPI" height="14" loading="lazy"></a>
-      </div>
-
-      <div class="pkg hide-sm">
-        <a class="pkg-mark" href="https://www.npmjs.com/package/@geekvb/blare" target="_blank" rel="noopener" title="@geekvb/blare on npm">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="7" width="22" height="10" fill="#F2555A"/><path d="M4 9.5h5.5v5H8V11H6.5v3.5H4v-5Zm6.8 0h5.4v6.9h-2.5v-1.9h-1.3v-5h-1.6v5h-2.5V9.5h2.5Zm-.1 1.5v2h1.4v-2h-1.4Zm6.8-1.5H23v5h-2.5V11H19v3.5h-1.5v-5Z" fill="#0A0A0B"/></svg>
-          npm
-        </a>
-        <button class="pkg-cmd" data-copy="npm i @geekvb/blare" title="Copy: npm i @geekvb/blare">
-          npm i @geekvb/blare
-          <svg class="ico" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
-        </button>
-        <a class="pkg-ver" href="https://www.npmjs.com/package/@geekvb/blare" target="_blank" rel="noopener"><img src="https://img.shields.io/npm/v/%40geekvb%2Fblare?label=&amp;color=%2317171A&amp;labelColor=%2317171A&amp;style=flat-square" alt="@geekvb/blare version on npm" height="14" loading="lazy"></a>
-      </div>
-
+      <a class="pkg-link hide-sm" href="https://pypi.org/project/blare/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11.9 2c-1.6 0-3 .2-3.9.6-.9.4-1.3 1-1.3 1.8v2.2h5.2v.7H4.6c-1 0-1.8.5-2.3 1.6C1.8 10 1.7 11 1.7 12s.1 2 .5 3c.5 1.2 1.3 1.8 2.4 1.8h1.8v-2.6c0-1.2.5-2.1 1.5-2.7.8-.5 1.8-.7 3-.7h3.4c1 0 1.8-.3 2.4-.9.6-.6.9-1.4.9-2.3V4.4c0-.8-.5-1.4-1.4-1.8-.9-.4-2.2-.6-3.8-.6h-.5Zm-2.3 1.6c.4 0 .7.3.7.8s-.3.8-.7.8-.8-.3-.8-.8.4-.8.8-.8Z" fill="#4C8DFF"/><path d="M12.1 22c1.6 0 3-.2 3.9-.6.9-.4 1.3-1 1.3-1.8v-2.2h-5.2v-.7h7.3c1 0 1.8-.5 2.3-1.6.4-1.1.5-2.1.5-3.1s-.1-2-.5-3c-.5-1.2-1.3-1.8-2.4-1.8h-1.8v2.6c0 1.2-.5 2.1-1.5 2.7-.8.5-1.8.7-3 .7h-3.4c-1 0-1.8.3-2.4.9-.6.6-.9 1.4-.9 2.3v3.2c0 .8.5 1.4 1.4 1.8.9.4 2.2.6 3.8.6h.6Zm2.3-1.6c-.4 0-.7-.3-.7-.8s.3-.8.7-.8.8.3.8.8-.4.8-.8.8Z" fill="#F1B24A"/></svg>
+        PyPI
+      </a>
+      <a class="pkg-link hide-sm" href="https://www.npmjs.com/package/@geekvb/blare" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="0" y="5" width="24" height="14" rx="2" fill="#CB3837"/><text x="12" y="15.4" text-anchor="middle" fill="#fff" font-family="Geist, sans-serif" font-size="8.4" font-weight="700" letter-spacing="-.3">npm</text></svg>
+        npm
+      </a>
       <a class="btn btn-sm" href="https://github.com/D4RKGEEK/blare" target="_blank" rel="noopener">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38v-1.33c-2.23.49-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.05-.49.05-.49.81.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.67.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .66-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
         <span class="hide-sm">GitHub</span>
@@ -608,15 +601,32 @@ footer{border-top:1px solid var(--line);padding:40px 0 48px;background:var(--bg-
   <div class="wrap hero-grid">
    <div>
     <h1>Your error channel, unmuted.</h1>
-    <p class="lede">blare catches every crash in your Python and Node services, groups the identical ones into a single message, and posts it to Slack, Discord or Teams. No server, no database, no dashboard — a library and one environment variable.</p>
+    <p class="lede">Every crash in your Python and Node services, captured, grouped and posted to Slack, Discord or Teams. One message per problem — not one per crash. No server, no database, no dashboard.</p>
 
-    <div class="install" role="group" aria-label="Install blare">
-      <div class="seg" data-single role="group" aria-label="Choose a language">
-        <button type="button" data-lang="py" aria-pressed="true">Python</button>
-        <button type="button" data-lang="js" aria-pressed="false">Node.js</button>
+    <!-- install, where people look for it -->
+    <div class="inst">
+      <button class="inst-card" data-copy="pip install blare" title="Copy: pip install blare">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11.9 2c-1.6 0-3 .2-3.9.6-.9.4-1.3 1-1.3 1.8v2.2h5.2v.7H4.6c-1 0-1.8.5-2.3 1.6C1.8 10 1.7 11 1.7 12s.1 2 .5 3c.5 1.2 1.3 1.8 2.4 1.8h1.8v-2.6c0-1.2.5-2.1 1.5-2.7.8-.5 1.8-.7 3-.7h3.4c1 0 1.8-.3 2.4-.9.6-.6.9-1.4.9-2.3V4.4c0-.8-.5-1.4-1.4-1.8-.9-.4-2.2-.6-3.8-.6h-.5Zm-2.3 1.6c.4 0 .7.3.7.8s-.3.8-.7.8-.8-.3-.8-.8.4-.8.8-.8Z" fill="#4C8DFF"/><path d="M12.1 22c1.6 0 3-.2 3.9-.6.9-.4 1.3-1 1.3-1.8v-2.2h-5.2v-.7h7.3c1 0 1.8-.5 2.3-1.6.4-1.1.5-2.1.5-3.1s-.1-2-.5-3c-.5-1.2-1.3-1.8-2.4-1.8h-1.8v2.6c0 1.2-.5 2.1-1.5 2.7-.8.5-1.8.7-3 .7h-3.4c-1 0-1.8.3-2.4.9-.6.6-.9 1.4-.9 2.3v3.2c0 .8.5 1.4 1.4 1.8.9.4 2.2.6 3.8.6h.6Zm2.3-1.6c-.4 0-.7-.3-.7-.8s.3-.8.7-.8.8.3.8.8-.4.8-.8.8Z" fill="#F1B24A"/></svg></span>
+        <span class="t"><span class="eco">Python · PyPI</span><span class="cmd">pip install blare</span></span>
+        <span class="cp"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg></span>
+      </button>
+      <button class="inst-card" data-copy="npm i @geekvb/blare" title="Copy: npm i @geekvb/blare">
+        <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="0" y="5" width="24" height="14" rx="2" fill="#CB3837"/><text x="12" y="15.4" text-anchor="middle" fill="#fff" font-family="Geist, sans-serif" font-size="8.4" font-weight="700" letter-spacing="-.3">npm</text></svg></span>
+        <span class="t"><span class="eco">Node · npm</span><span class="cmd">npm i @geekvb/blare</span></span>
+        <span class="cp"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg></span>
+      </button>
+    </div>
+
+    <div class="install" role="group" aria-label="Wire blare in">
+      <div class="next-head">
+        <span class="t">Then two lines and one variable</span>
+        <div class="seg" data-single role="group" aria-label="Choose a language">
+          <button type="button" data-lang="py" aria-pressed="true">Python</button>
+          <button type="button" data-lang="js" aria-pressed="false">Node.js</button>
+        </div>
       </div>
       <div class="codeblock" id="install-block">
-        <button class="btn btn-sm btn-icon copy" data-copy-target="install-code" aria-label="Copy install snippet">
+        <button class="btn btn-sm btn-icon copy" data-copy-target="install-code" aria-label="Copy the snippet">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h1"/></svg>
         </button>
         <pre id="install-code"><code></code></pre>
@@ -1405,13 +1415,6 @@ aws_key=AKIAEXAMPLENOTREAL00 card 4242 4242 4242 4242
   const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* version shields are decorative: drop the slot if one cannot load */
-  $$(".pkg-ver img").forEach(img => {
-    const drop = () => { const s = img.closest(".pkg-ver"); if(s) s.hidden = true; };
-    img.addEventListener("error", drop);
-    if(img.complete && img.naturalWidth === 0) drop();
-  });
-
   /* ---------------- toast + copy ---------------- */
   const toast = $("#toast");
   let toastT;
@@ -1457,31 +1460,25 @@ aws_key=AKIAEXAMPLENOTREAL00 card 4242 4242 4242 4242
 
   /* ---------------- hero install switcher ---------------- */
   const INSTALL = {
-    py: `<span class="tok-c"># 1 · install</span>
-pip install blare
-
-<span class="tok-c"># 2 · two lines in your entry point</span>
+    py: `<span class="tok-c"># in your entry point</span>
 <span class="tok-k">import</span> blare
 blare.<span class="tok-f">init</span>()
 
-<span class="tok-c"># 3 · one environment variable</span>
+<span class="tok-c"># in your environment</span>
 <span class="tok-n">BLARE_SINKS</span>=https://hooks.slack.com/services/T000/B000/xxxx
 <span class="tok-n">BLARE_ENV</span>=production
 
-<span class="tok-c"># 4 · prove it before you need it</span>
+<span class="tok-c"># prove it works before you need it</span>
 python -m blare --send`,
-    js: `<span class="tok-c">// 1 · install</span>
-npm i @geekvb/blare
-
-<span class="tok-c">// 2 · two lines in your entry point</span>
+    js: `<span class="tok-c">// in your entry point</span>
 <span class="tok-k">import</span> blare <span class="tok-k">from</span> <span class="tok-s">"@geekvb/blare"</span>;
 blare.<span class="tok-f">init</span>();
 
-<span class="tok-c">// 3 · one environment variable</span>
+<span class="tok-c">// in your environment</span>
 <span class="tok-n">BLARE_SINKS</span>=https://discord.com/api/webhooks/000/xxxx
 <span class="tok-n">BLARE_ENV</span>=production
 
-<span class="tok-c">// 4 · prove it before you need it</span>
+<span class="tok-c">// prove it works before you need it</span>
 npx @geekvb/blare --send`
   };
   const installCode = $("#install-code code");
