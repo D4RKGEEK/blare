@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="blare">
+  <title>blare</title>
+  <rect width="64" height="64" rx="15" fill="#17171A"/>
+  <circle cx="21" cy="32" r="6" fill="#F1B24A"/>
+  <path d="M33 20.5a17 17 0 0 1 0 23" stroke="#EDEDEF" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+  <path d="M45 12a29 29 0 0 1 0 40" stroke="#EDEDEF" stroke-width="6.5" fill="none" stroke-linecap="round" opacity=".4"/>
+</svg>

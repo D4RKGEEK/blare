@@ -2,3 +2,6 @@ User-agent: *
 Allow: /
 
 Sitemap: https://d4rkgeek.github.io/blare/sitemap.xml
+
+# Agent-readable brief for installing blare
+# https://d4rkgeek.github.io/blare/llms.txt

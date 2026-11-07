@@ -1,0 +1,144 @@
+# blare
+
+> Error alerting for Python and Node.js that needs no server, no database and no
+> dashboard. It captures failures, groups identical ones into a single message, and
+> posts that message to Slack, Discord, Microsoft Teams or any webhook.
+> One message per problem, not one per crash.
+
+This file is written for coding agents. It is enough to install and wire blare into a
+repository correctly without reading the source. Normative behaviour lives in SPEC.md.
+
+- Source: https://github.com/D4RKGEEK/blare
+- Spec (normative): https://github.com/D4RKGEEK/blare/blob/main/SPEC.md
+- Conformance fixtures: https://github.com/D4RKGEEK/blare/tree/main/conformance
+- License: Apache-2.0. No account, no API key, no telemetry, no hosted component.
+- Current version: 0.1.0 (spec v1)
+
+## Packages
+
+| Runtime | Package | Install | Minimum |
+| --- | --- | --- | --- |
+| Python | `blare` (PyPI) | `pip install blare` | 3.9 |
+| Node / TypeScript | `@geekvb/blare` (npm) | `npm i @geekvb/blare` | 18 |
+
+The names differ because npm's typosquatting filter refuses the unscoped name. Same
+project, same spec version, same fixtures.
+
+## The whole integration
+
+1. Add the package to the dependency file (`pyproject.toml` / `requirements.txt`, or
+   `package.json`). Do not vendor it.
+2. Call `init()` **once**, at process start, before the first import or call that can
+   fail. Not per request, not per worker, not lazily.
+3. Register **exactly one** framework hook, chosen from what the dependency file
+   actually contains. Adding two produces duplicate captures.
+4. Set `BLARE_SINKS` in the environment. Put a placeholder in `.env.example` and in the
+   deployment config. Never commit a real webhook URL, and never read `BLARE_SINKS` from
+   application code.
+5. Run the smoke test and show the output: `python -m blare --send` or
+   `npx @geekvb/blare --send`.
+
+### Python
+
+```python
+import blare
+blare.init()
+```
+
+```python
+# FastAPI, Starlette, Litestar, Quart — any ASGI app
+from blare.integrations.asgi import BlareASGIMiddleware
+app.add_middleware(BlareASGIMiddleware)
+
+# Flask, Django, or any WSGI app
+from blare.integrations.flask import install
+install(app)
+
+# Celery
+from blare.integrations.celery import install as install_celery
+install_celery(celery_app)
+```
+
+### Node / TypeScript
+
+```js
+import blare from "@geekvb/blare";
+blare.init();
+```
+
+```js
+// Express — after your routes, as the last middleware
+import { blareErrorHandler } from "@geekvb/blare";
+app.use(blareErrorHandler());
+
+// Fastify
+import { blarePlugin } from "@geekvb/blare";
+app.register(blarePlugin);
+```
+
+## What is captured with no code change
+
+`init()` alone installs these. Do **not** wrap application code in try/except or
+try/catch merely to report an error — it is already captured.
+
+| Source | Python | Node |
+| --- | --- | --- |
+| Existing log calls | `logging` handler on the root logger | pino stream, winston transport |
+| Unhandled crashes | `sys.excepthook`, thread hook | `uncaughtException`, `unhandledRejection` |
+| Web frameworks | FastAPI, Starlette, Litestar, Quart, Flask, Django, any WSGI | Express, Fastify, NestJS, Next.js (server) |
+| Background jobs | Celery | — |
+| Manual | `blare.capture(exc)` | `blare.capture(err)` |
+
+## Configuration (environment variables only)
+
+There is no config file and no init options worth passing.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `BLARE_SINKS` | — | Webhook URLs, comma separated. The only required one. |
+| `BLARE_ENV` | `unknown` | Shown on every alert, e.g. `production`. |
+| `BLARE_SERVICE` | derived | Service name on the alert. |
+| `BLARE_LEVEL` | `ERROR` | Minimum level that alerts. |
+| `BLARE_DEDUPE_WINDOW` | `300` | Seconds of silence per fingerprint. |
+| `BLARE_MAX_PER_HOUR` | `20` | Hard ceiling across all problems; `0` disables. |
+| `BLARE_IGNORE` | — | Glob patterns dropped before anything else. |
+| `BLARE_STATE` | `file` | `memory`, `file`, or `redis://…` for multi-host dedupe. |
+| `BLARE_DRY_RUN` | `false` | Render to stderr, send nothing. |
+| `BLARE_ENABLED` | `true` | The off switch. |
+
+Destination format is detected from the webhook hostname: `hooks.slack.com` gives Block
+Kit, `discord.com` gives an embed, `*.webhook.office.com` gives an Adaptive Card or the
+legacy MessageCard, and anything else receives the canonical event as JSON. There is no
+scheme or per-service setting to choose.
+
+## Behaviour an agent should not re-implement
+
+- **Fingerprint** = exception type + the innermost stack frame that is *not* in
+  `site-packages` or `node_modules` + the message with variable parts (numbers, UUIDs,
+  hex, emails, URLs, paths, quoted strings) replaced. Identical across hosts, processes,
+  and both language ports.
+- **Throttle** = one alert per fingerprint per `BLARE_DEDUPE_WINDOW`, plus a hard
+  `BLARE_MAX_PER_HOUR` ceiling. Suppressed occurrences are not lost; they ride along as a
+  count on the next alert, so there is no background timer and no second summary message.
+- **State** is a lock-guarded file in the OS temp directory by default, shared by every
+  process on the host, so four workers seeing one crash send one alert.
+- **Redaction** runs after fingerprinting (so a rule change cannot regroup history) and
+  before rendering (so no sink sees a raw value). Locals, request and response bodies,
+  query strings and environment variable values are never collected at all.
+- **Delivery** happens on a worker thread behind a bounded queue, retries twice, and
+  never raises into the application. If the queue fills, alerts are dropped and counted
+  rather than back-pressuring production traffic.
+
+## Out of scope — do not build these on top
+
+blare has no history, search, dashboard, metrics, traces or uptime checks, and it does not
+notify end users. If the task needs any of those, the answer is an error tracker (Sentry,
+GlitchTip, Bugsink) alongside blare, not an extension to it. There is no browser support:
+a webhook URL in frontend JavaScript is a public secret.
+
+## Definition of done
+
+The app still starts; exactly one `init()` call and one framework hook exist; `BLARE_SINKS`
+and `BLARE_ENV` are documented as placeholders and set in the environment; no webhook URL
+is in tracked code; existing logging calls are untouched; the smoke test posted one
+message; and the diff is roughly fifteen lines plus the dependency entry.
